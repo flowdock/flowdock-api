@@ -13,7 +13,7 @@ module Flowdock
   class Flow
     include HTTParty
     class ApiTokenMissingError < StandardError; end
-    class SourceMissingError < StandardError; end
+    class InvalidSourceError < StandardError; end
     class InvalidSenderInformationError < StandardError; end
     class InvalidMessageError < StandardError; end
 
@@ -21,7 +21,7 @@ module Flowdock
       raise ApiTokenMissingError if api_token.blank?
       @api_token = api_token
       
-      raise SourceMissingError if source.blank?
+      raise InvalidSourceError if source.blank? || !source.match(/^\w+$/i)
       @source = source
 
       raise InvalidSenderInformationError if from.nil? || !from.kind_of?(Hash)

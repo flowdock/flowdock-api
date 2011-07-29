@@ -23,7 +23,14 @@ describe Flowdock do
     lambda {
       @flow = Flowdock.new(:api_token => "test", :source => "",
        :from => {:name => "test", :address => "invalid@nodeta.fi"})
-    }.should raise_error(Flowdock::Flow::SourceMissingError)
+    }.should raise_error(Flowdock::Flow::InvalidSourceError)
+  end
+  
+  it "should fail to initialize flow when source is not alphanumeric" do
+    lambda {
+      @flow = Flowdock.new(:api_token => "test", :source => "$foobar",
+       :from => {:name => "test", :address => "invalid@nodeta.fi"})
+    }.should raise_error(Flowdock::Flow::InvalidSourceError)
   end
   
   it "should fail to initialize flow without sender information" do
