@@ -26,7 +26,7 @@ Example
   require 'flowdock-api'
 
   # create a new Flow object with target flow's api token and sender information
-  flow = Flowdock.new(:api_token => "56188e2003e370c6efa9711988f7bf02", 
+  flow = FlowdockApi.new(:api_token => "56188e2003e370c6efa9711988f7bf02", 
     :source => "myapp", 
     :from => {:name => "John Doe", :address => "john.doe@yourdomain.com"})
 
