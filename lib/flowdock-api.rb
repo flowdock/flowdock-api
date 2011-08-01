@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'httparty'
 
-module Flowdock
+module FlowdockApi
   FLOWDOCK_API_URL = "http://api.local.nodeta.dmz/v1/messages/influx"
 
   class << self
@@ -21,7 +21,7 @@ module Flowdock
       raise ApiTokenMissingError, "Flow must have :api_token attribute" if api_token.blank?
       @api_token = api_token
       
-      raise InvalidSourceError, "Flow must have :source attribute" if source.blank? || !source.match(/^\w+$/i)
+      raise InvalidSourceError, "Flow must have valid :source attribute, only alphanumeric characters and underscores can be used" if source.blank? || !source.match(/^\w+$/i)
       @source = source
 
       raise InvalidSenderInformationError, "Flow must have :from attribute" if from.nil? || !from.kind_of?(Hash)
