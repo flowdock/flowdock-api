@@ -5,9 +5,8 @@ require "flowdock-api/version"
 Gem::Specification.new do |s|
   s.name        = "flowdock-api"
   s.version     = Flowdock::VERSION
-  s.authors     = ["Antti Pitkänen"]
-  s.email       = ["antti.pitkanen@nodeta.fi"]
-  s.homepage    = "https://www.flowdock.com/help"
+  s.email       = ["team@flowdock.com"]
+  s.homepage    = "https://www.flowdock.com/api"
   s.summary     = %q{Ruby Gem for using Flowdock's public API.}
   s.description = %q{Ruby Gem for using Flowdock's public API.}
 
