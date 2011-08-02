@@ -3,7 +3,7 @@ flowdock-api
 
 Ruby Gem for using Flowdock public API.
 
-* https://www.flowdock.com/help/api
+* http://www.flowdock.com/api
 
 Compatibility
 -------------
