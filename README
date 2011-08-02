@@ -1,5 +1,5 @@
-flowdock-api
-===========
+flowdock
+========
 
 Ruby Gem for using the Flowdock API.
 
@@ -8,7 +8,7 @@ Ruby Gem for using the Flowdock API.
 Compatibility
 -------------
 
-flowdock-api has been tested under Ruby 1.8.7.
+flowdock gem has been tested under Ruby 1.8.7.
 
 Requirements
 ------------
@@ -18,15 +18,15 @@ Requirements
 Install
 -------
 
-* gem install flowdock-api
+* gem install flowdock
 
 Example
 -------
 
-  require 'flowdock-api'
+  require 'flowdock'
 
   # create a new Flow object with target flow's api token and sender information
-  flow = FlowdockApi.new(:api_token => "56188e2003e370c6efa9711988f7bf02", 
+  flow = Flowdock::Flow.new(:api_token => "56188e2003e370c6efa9711988f7bf02", 
     :source => "myapp", 
     :from => {:name => "John Doe", :address => "john.doe@yourdomain.com"})
 

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    flowdock-api (0.1.0)
+    flowdock (0.1.0)
       httparty (~> 0.7.8)
 
 GEM
@@ -28,6 +28,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  flowdock-api!
+  flowdock!
   rspec
   webmock (~> 1.6.0)

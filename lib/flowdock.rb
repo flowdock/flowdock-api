@@ -1,14 +1,8 @@
 require 'rubygems'
 require 'httparty'
 
-module FlowdockApi
-  FLOWDOCK_API_URL = "http://api.local.nodeta.dmz/v1/messages/influx"
-
-  class << self
-    def new(options={})
-      Flow.new(options[:api_token], options[:source], options[:from])
-    end
-  end
+module Flowdock
+  FLOWDOCK_API_URL = "https://api.flowdock.com/v1/messages/influx"
 
   class Flow
     include HTTParty
@@ -17,17 +11,18 @@ module FlowdockApi
     class InvalidSenderInformationError < StandardError; end
     class InvalidMessageError < StandardError; end
 
-    def initialize(api_token, source, from)
-      raise ApiTokenMissingError, "Flow must have :api_token attribute" if api_token.blank?
-      @api_token = api_token
+    # Required options keys: :api_token, :source, :from => { :name, :address }
+    def initialize(options = {})
+      @api_token = options[:api_token]
+      raise ApiTokenMissingError, "Flow must have :api_token attribute" if @api_token.blank?
       
-      raise InvalidSourceError, "Flow must have valid :source attribute, only alphanumeric characters and underscores can be used" if source.blank? || !source.match(/^\w+$/i)
-      @source = source
+      @source = options[:source]
+      raise InvalidSourceError, "Flow must have valid :source attribute, only alphanumeric characters and underscores can be used" if @source.blank? || !@source.match(/^\w+$/i)
 
-      raise InvalidSenderInformationError, "Flow must have :from attribute" if from.nil? || !from.kind_of?(Hash)
-      from.reject! { |k,v| ![:name, :address].include?(k) }
-      raise InvalidSenderInformationError, "Flow's :from attribute must have both :name and :address" if from[:name].blank? || from[:address].blank?
-      @from = from
+      @from = options[:from]
+      raise InvalidSenderInformationError, "Flow must have :from attribute" if @from.nil? || !@from.kind_of?(Hash)
+      @from.reject! { |k,v| ![:name, :address].include?(k) }
+      raise InvalidSenderInformationError, "Flow's :from attribute must have both :name and :address" if @from[:name].blank? || @from[:address].blank?
     end
 
     def send_message(params)
