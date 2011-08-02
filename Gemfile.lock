@@ -1,0 +1,30 @@
+PATH
+  remote: .
+  specs:
+    flowdock-api (0.1.0)
+      httparty (~> 0.7.8)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    crack (0.1.8)
+    diff-lcs (1.1.2)
+    fakeweb (1.3.0)
+    httparty (0.7.8)
+      crack (= 0.1.8)
+    rspec (2.6.0)
+      rspec-core (~> 2.6.0)
+      rspec-expectations (~> 2.6.0)
+      rspec-mocks (~> 2.6.0)
+    rspec-core (2.6.4)
+    rspec-expectations (2.6.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.6.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  fakeweb (~> 1.3.0)
+  flowdock-api!
+  rspec
