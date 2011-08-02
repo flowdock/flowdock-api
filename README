@@ -1,14 +1,14 @@
 flowdock-api
 ===========
 
-Ruby Gem for using Flowdock public API.
+Ruby Gem for using the Flowdock API.
 
 * http://www.flowdock.com/api
 
 Compatibility
 -------------
 
-flowdock-api has been tested under Ruby 1.8.7
+flowdock-api has been tested under Ruby 1.8.7.
 
 Requirements
 ------------
@@ -40,7 +40,7 @@ API methods
 
 * Flow methods
 
-  send_message(params) - Send message to flow. Required parameters for message are :subject, :content and :format. Optional parameter :tags can be used to add tags to message.
+  send_message(params) - Send message to flow. Required parameters for message are :subject and :content. Optional parameter :tags can be used to add tags to message. Currently messages are always sent in the HTML format.
 
 
 Copyright

@@ -32,21 +32,23 @@ module FlowdockApi
 
     def send_message(params)
       raise InvalidMessageError, "Message must have both :subject and :content" if params[:subject].blank? || params[:content].blank?
-      raise InvalidMessageError, "Message must have :format with one of following values: html" if params[:format].blank? || !["html"].include?(params[:format])
 
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || tag.blank? }
-      
-      resp = self.class.post(get_flowdock_api_url, :body => {
-          :source => @source,
-          :format => params[:format],
-          :from_name => @from[:name],
-          :from_address => @from[:address],
-          :subject => params[:subject],
-          :content => params[:content],
-          :tags => tags.join(",")
-        }
-      )
+
+      params = {
+        :source => @source,
+        :format => 'html', # currently only supported format
+        :from_name => @from[:name],
+        :from_address => @from[:address],
+        :subject => params[:subject],
+        :content => params[:content]
+      }
+      params[:tags] = tags.join(",") if tags.size > 0
+
+      # Send the request
+      resp = self.class.post(get_flowdock_api_url, :body => params)
+
       resp.code == 200
     end
   

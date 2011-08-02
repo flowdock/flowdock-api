@@ -7,8 +7,8 @@ Gem::Specification.new do |s|
   s.version     = FlowdockApi::VERSION
   s.email       = ["team@flowdock.com"]
   s.homepage    = "https://www.flowdock.com/api"
-  s.summary     = %q{Ruby Gem for using Flowdock's public API.}
-  s.description = %q{Ruby Gem for using Flowdock's public API.}
+  s.summary     = %q{Ruby Gem for using Flowdock's API.}
+  s.description = %q{Ruby Gem for using Flowdock's API.}
 
   s.rubyforge_project = "flowdock-api"
 
@@ -19,5 +19,5 @@ Gem::Specification.new do |s|
   
   s.add_dependency("httparty", "~>0.7.8")
   s.add_development_dependency("rspec")
-  s.add_development_dependency("fakeweb", "~>1.3.0")
+  s.add_development_dependency("webmock", "~>1.6.0")
 end

@@ -1,8 +1,6 @@
 require 'spec_helper'
-require 'fakeweb'
 
 describe FlowdockApi do
-  
   describe "with initializing flow" do
     it "should succeed with correct token and sender information" do
       lambda {
@@ -47,52 +45,57 @@ describe FlowdockApi do
   
   describe "with sending messages" do
     before(:each) do
-      FakeWeb.allow_net_connect = false
-      FakeWeb.clean_registry
       @token = "test"
       @flow = FlowdockApi.new(:api_token => @token, :source => "myapp",
-       :from => {:name => "test", :address => "invalid@nodeta.fi"})
+       :from => {:name => "Eric Example", :address => "eric@example.com"})
+      @example_content = "<h1>Hello</h1>\n<p>Let's rock and roll!</p>"
     end
     
     it "should not send without subject" do
       lambda {
-        @flow.send_message(:subject => "", :content => "Test", :format => "html")
+        @flow.send_message(:subject => "", :content => "Test")
       }.should raise_error(FlowdockApi::Flow::InvalidMessageError)
     end
     
     it "should not send without content" do
       lambda {
-        @flow.send_message(:subject => "Test", :content => "", :format => "html")
-      }.should raise_error(FlowdockApi::Flow::InvalidMessageError)
-    end
-    
-    it "should not send without correct format" do
-      lambda {
-        @flow.send_message(:subject => "Testing", :content => "Test", :format => "")
+        @flow.send_message(:subject => "Test", :content => "")
       }.should raise_error(FlowdockApi::Flow::InvalidMessageError)
     end
     
     it "should send with valid parameters and return true" do
       lambda {
-        FakeWeb.register_uri(:post,
-                             "#{FlowdockApi::FLOWDOCK_API_URL}/#{@token}",
-                             :status => ["200", "OK"], :body => "")
-        @flow.send_message(:subject => "Test", :content => "Test", :format => "html", :tags => ["cool", "stuff"]).should be_true
+        stub_request(:post, "#{FlowdockApi::FLOWDOCK_API_URL}/#{@token}").
+          with(:body => {
+            :source => "myapp",
+            :format => "html",
+            :from_name => "Eric Example",
+            :from_address => "eric@example.com",
+            :subject => "Hello World",
+            :content => @example_content,
+            :tags => "cool,stuff"
+          }).
+          to_return(:body => "", :status => 200)
+
+        @flow.send_message(:subject => "Hello World", :content => @example_content, :tags => ["cool", "stuff"]).should be_true
       }.should_not raise_error
     end
     
     it "should return false if backend returns anything but 200 OK" do
       lambda {
-        FakeWeb.register_uri(:post,
-                             "#{FlowdockApi::FLOWDOCK_API_URL}/#{@token}",
-                             :status => ["500", "Internal Server Error"], :body => "")
-        @flow.send_message(:subject => "Test", :content => "Test", :format => "html", :tags => ["cool", "stuff"]).should be_false
+        stub_request(:post, "#{FlowdockApi::FLOWDOCK_API_URL}/#{@token}").
+          with(:body => {
+            :source => "myapp",
+            :format => "html",
+            :from_name => "Eric Example",
+            :from_address => "eric@example.com",
+            :subject => "Hello World",
+            :content => @example_content
+          }).
+          to_return(:body => "Internal Server Error", :status => 500)
+
+        @flow.send_message(:subject => "Hello World", :content => @example_content).should be_false
       }.should_not raise_error
     end
-    
-    after(:each) do
-      FakeWeb.allow_net_connect = true
-    end
   end
-  
 end
