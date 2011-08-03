@@ -6,28 +6,28 @@ module Flowdock
 
   class Flow
     include HTTParty
-    class ApiTokenMissingError < StandardError; end
-    class InvalidSourceError < StandardError; end
-    class InvalidSenderInformationError < StandardError; end
-    class InvalidMessageError < StandardError; end
+    class InvalidParameterError < StandardError; end
     class ApiError < StandardError; end
 
     # Required options keys: :api_token, :source, :from => { :name, :address }
     def initialize(options = {})
       @api_token = options[:api_token]
-      raise ApiTokenMissingError, "Flow must have :api_token attribute" if @api_token.blank?
+      raise InvalidParameterError, "Flow must have :api_token attribute" if @api_token.blank?
       
       @source = options[:source]
-      raise InvalidSourceError, "Flow must have valid :source attribute, only alphanumeric characters and underscores can be used" if @source.blank? || !@source.match(/^[a-z0-9\-_ ]+$/i)
+      raise InvalidParameterError, "Flow must have valid :source attribute, only alphanumeric characters and underscores can be used" if @source.blank? || !@source.match(/^[a-z0-9\-_ ]+$/i)
+
+      @project = options[:project]
+      raise InvalidParameterError, "Optional attribute :project can only contain alphanumeric characters and underscores" if !@project.blank? && !@project.match(/^[a-z0-9\-_ ]+$/i)
 
       @from = options[:from] || {}
     end
 
     def send_message(params)
-      raise InvalidMessageError, "Message must have both :subject and :content" if params[:subject].blank? || params[:content].blank?
+      raise InvalidParameterError, "Message must have both :subject and :content" if params[:subject].blank? || params[:content].blank?
       
       from = (params[:from].kind_of?(Hash)) ? params[:from] : @from
-      raise InvalidSenderInformationError, "Flow's :from attribute must have both :name and :address" if from[:name].blank? || from[:address].blank?
+      raise InvalidParameterError, "Flow's :from attribute must have both :name and :address" if from[:name].blank? || from[:address].blank?
 
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || tag.blank? }
@@ -41,6 +41,7 @@ module Flowdock
         :content => params[:content]
       }
       params[:tags] = tags.join(",") if tags.size > 0
+      params[:project] = @project unless @project.blank?
 
       # Send the request
       resp = self.class.post(get_flowdock_api_url, :body => params)
