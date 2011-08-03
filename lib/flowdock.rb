@@ -18,7 +18,7 @@ module Flowdock
       raise ApiTokenMissingError, "Flow must have :api_token attribute" if @api_token.blank?
       
       @source = options[:source]
-      raise InvalidSourceError, "Flow must have valid :source attribute, only alphanumeric characters and underscores can be used" if @source.blank? || !@source.match(/^\w+$/i)
+      raise InvalidSourceError, "Flow must have valid :source attribute, only alphanumeric characters and underscores can be used" if @source.blank? || !@source.match(/^[a-z0-9\-_ ]+$/i)
 
       @from = options[:from] || {}
     end
