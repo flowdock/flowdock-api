@@ -2,7 +2,7 @@ require 'rubygems'
 require 'httparty'
 
 module Flowdock
-  FLOWDOCK_API_URL = "https://api.flowdock.com/v1/messages/influx"
+  FLOWDOCK_API_URL = "http://api.local.nodeta.dmz/v1/messages/influx"
 
   class Flow
     include HTTParty
@@ -19,14 +19,14 @@ module Flowdock
       @source = options[:source]
       raise InvalidSourceError, "Flow must have valid :source attribute, only alphanumeric characters and underscores can be used" if @source.blank? || !@source.match(/^\w+$/i)
 
-      @from = options[:from]
-      raise InvalidSenderInformationError, "Flow must have :from attribute" if @from.nil? || !@from.kind_of?(Hash)
-      @from.reject! { |k,v| ![:name, :address].include?(k) }
-      raise InvalidSenderInformationError, "Flow's :from attribute must have both :name and :address" if @from[:name].blank? || @from[:address].blank?
+      @from = options[:from] || {}
     end
 
     def send_message(params)
       raise InvalidMessageError, "Message must have both :subject and :content" if params[:subject].blank? || params[:content].blank?
+      
+      from = (params[:from].kind_of?(Hash)) ? params[:from] : @from
+      raise InvalidSenderInformationError, "Flow's :from attribute must have both :name and :address" if from[:name].blank? || from[:address].blank?
 
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || tag.blank? }
@@ -34,8 +34,8 @@ module Flowdock
       params = {
         :source => @source,
         :format => 'html', # currently only supported format
-        :from_name => @from[:name],
-        :from_address => @from[:address],
+        :from_name => from[:name],
+        :from_address => from[:address],
         :subject => params[:subject],
         :content => params[:content]
       }

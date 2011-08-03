@@ -2,44 +2,35 @@ require 'spec_helper'
 
 describe Flowdock do
   describe "with initializing flow" do
-    it "should succeed with correct token and sender information" do
+    it "should succeed with correct token and source" do
       lambda {
-        @flow = Flowdock::Flow.new(:api_token => "test", :source => "myapp", 
+        @flow = Flowdock::Flow.new(:api_token => "test", :source => "myapp")
+      }.should_not raise_error
+    end
+    
+    it "should succeed with correct token, source and sender information" do
+      lambda {
+        @flow = Flowdock::Flow.new(:api_token => "test", :source => "myapp",
           :from => {:name => "test", :address => "invalid@nodeta.fi"})
       }.should_not raise_error
     end
   
     it "should fail without token" do
       lambda {
-        @flow = Flowdock::Flow.new(:api_token => "", :source => "myapp", 
-          :from => {:name => "test", :address => "invalid@nodeta.fi"})
+        @flow = Flowdock::Flow.new(:api_token => "", :source => "myapp")
       }.should raise_error(Flowdock::Flow::ApiTokenMissingError)
     end
   
     it "should fail without source" do
       lambda {
-        @flow = Flowdock::Flow.new(:api_token => "test", :source => "",
-         :from => {:name => "test", :address => "invalid@nodeta.fi"})
+        @flow = Flowdock::Flow.new(:api_token => "test", :source => "")
       }.should raise_error(Flowdock::Flow::InvalidSourceError)
     end
   
     it "should fail when source is not alphanumeric" do
       lambda {
-        @flow = Flowdock::Flow.new(:api_token => "test", :source => "$foobar",
-         :from => {:name => "test", :address => "invalid@nodeta.fi"})
+        @flow = Flowdock::Flow.new(:api_token => "test", :source => "$foobar")
       }.should raise_error(Flowdock::Flow::InvalidSourceError)
-    end
-  
-    it "should fail without sender information" do
-      lambda {
-        @flow = Flowdock::Flow.new(:api_token => "test", :source => "myapp",
-         :from => {:name => "", :address => "invalid@nodeta.fi"})
-      }.should raise_error(Flowdock::Flow::InvalidSenderInformationError)
-    
-      lambda {
-        @flow = Flowdock::Flow.new(:api_token => "test", :source => "myapp",
-         :from => {:name => "test", :address => ""})
-      }.should raise_error(Flowdock::Flow::InvalidSenderInformationError)
     end
   end
   
@@ -63,6 +54,13 @@ describe Flowdock do
       }.should raise_error(Flowdock::Flow::InvalidMessageError)
     end
     
+    it "should not send without sender information" do
+      @flow = Flowdock::Flow.new(:api_token => @token, :source => "myapp")
+      lambda {
+        @flow.send_message(:subject => "Test", :content => @example_content)
+      }.should raise_error(Flowdock::Flow::InvalidSenderInformationError)
+    end
+    
     it "should send with valid parameters and return true" do
       lambda {
         stub_request(:post, "#{Flowdock::FLOWDOCK_API_URL}/#{@token}").
@@ -78,6 +76,25 @@ describe Flowdock do
           to_return(:body => "", :status => 200)
 
         @flow.send_message(:subject => "Hello World", :content => @example_content, :tags => ["cool", "stuff"]).should be_true
+      }.should_not raise_error
+    end
+    
+    it "should allow overriding sender information per message" do
+      lambda {
+        stub_request(:post, "#{Flowdock::FLOWDOCK_API_URL}/#{@token}").
+          with(:body => {
+            :source => "myapp",
+            :format => "html",
+            :from_name => "Test",
+            :from_address => "invalid@nodeta.fi",
+            :subject => "Hello World",
+            :content => @example_content,
+            :tags => "cool,stuff"
+          }).
+          to_return(:body => "", :status => 200)
+
+        @flow.send_message(:subject => "Hello World", :content => @example_content, :tags => ["cool", "stuff"],
+          :from => {:name => "Test", :address => "invalid@nodeta.fi"}).should be_true
       }.should_not raise_error
     end
     
