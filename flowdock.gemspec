@@ -1,16 +1,15 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "flowdock-api/version"
+require "flowdock/version"
 
 Gem::Specification.new do |s|
-  s.name        = "flowdock-api"
-  s.version     = FlowdockApi::VERSION
+  s.name        = "flowdock"
+  s.version     = Flowdock::GEM_VERSION
   s.email       = ["team@flowdock.com"]
   s.homepage    = "https://www.flowdock.com/api"
-  s.summary     = %q{Ruby Gem for using Flowdock's public API.}
-  s.description = %q{Ruby Gem for using Flowdock's public API.}
+  s.summary     = %q{Ruby Gem for using Flowdock's API.}
 
-  s.rubyforge_project = "flowdock-api"
+  s.rubyforge_project = "flowdock"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
@@ -19,5 +18,5 @@ Gem::Specification.new do |s|
   
   s.add_dependency("httparty", "~>0.7.8")
   s.add_development_dependency("rspec")
-  s.add_development_dependency("fakeweb", "~>1.3.0")
+  s.add_development_dependency("webmock", "~>1.6.0")
 end

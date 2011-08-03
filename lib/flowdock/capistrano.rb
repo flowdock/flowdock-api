@@ -1,4 +1,4 @@
-require 'flowdock-api'
+require 'flowdock'
 
 Capistrano::Configuration.instance(:must_exist).load do
   set :flowdock_send_notification, false
@@ -6,8 +6,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :flowdock do
     task :set_flowdock_api do
       config = Grit::Config.new(repo)
-      set :flowdock_api, FlowdockApi.new(:api_token => api_token, 
-        :source => "flowdock_deploy", 
+      set :flowdock_api, Flowdock::Flow.new(:api_token => api_token, 
+        :source => "Capistrano deployment", 
         :from => {:name => config["user.name"], :address => config["user.email"]})
     end
 
