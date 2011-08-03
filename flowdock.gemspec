@@ -4,7 +4,7 @@ require "flowdock/version"
 
 Gem::Specification.new do |s|
   s.name        = "flowdock"
-  s.authors     = "anttipitkanen"
+  s.authors     = ["anttipitkanen"]
   s.version     = Flowdock::GEM_VERSION
   s.email       = ["team@flowdock.com"]
   s.homepage    = "https://www.flowdock.com/api"
