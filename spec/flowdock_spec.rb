@@ -98,7 +98,7 @@ describe Flowdock do
       }.should_not raise_error
     end
     
-    it "should return false if backend returns anything but 200 OK" do
+    it "should raise error if backend returns anything but 200 OK" do
       lambda {
         stub_request(:post, "#{Flowdock::FLOWDOCK_API_URL}/#{@token}").
           with(:body => {
@@ -112,7 +112,7 @@ describe Flowdock do
           to_return(:body => "Internal Server Error", :status => 500)
 
         @flow.send_message(:subject => "Hello World", :content => @example_content).should be_false
-      }.should_not raise_error
+      }.should raise_error(Flowdock::Flow::ApiError)
     end
   end
 end

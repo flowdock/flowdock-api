@@ -2,7 +2,7 @@ require 'rubygems'
 require 'httparty'
 
 module Flowdock
-  FLOWDOCK_API_URL = "http://api.local.nodeta.dmz/v1/messages/influx"
+  FLOWDOCK_API_URL = "https://api.flowdock.com/v1/messages/influx"
 
   class Flow
     include HTTParty
@@ -10,6 +10,7 @@ module Flowdock
     class InvalidSourceError < StandardError; end
     class InvalidSenderInformationError < StandardError; end
     class InvalidMessageError < StandardError; end
+    class ApiError < StandardError; end
 
     # Required options keys: :api_token, :source, :from => { :name, :address }
     def initialize(options = {})
@@ -43,8 +44,8 @@ module Flowdock
 
       # Send the request
       resp = self.class.post(get_flowdock_api_url, :body => params)
-
-      resp.code == 200
+      raise ApiError, "Flowdock API returned error: #{resp.body}" unless resp.code == 200
+      true
     end
   
     private

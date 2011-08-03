@@ -1,4 +1,5 @@
 require 'flowdock'
+require 'grit'
 
 Capistrano::Configuration.instance(:must_exist).load do
   set :flowdock_send_notification, false
@@ -6,7 +7,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :flowdock do
     task :set_flowdock_api do
       config = Grit::Config.new(repo)
-      set :flowdock_api, Flowdock::Flow.new(:api_token => api_token, 
+      set :flowdock_api, Flowdock::Flow.new(:api_token => flowdock_api_token, 
         :source => "Capistrano deployment", 
         :from => {:name => config["user.name"], :address => config["user.email"]})
     end
@@ -18,9 +19,9 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :notify_deploy_finished do
       # send message to the flow
       flow.send_message(:format => "html", 
-        :subject => "Flowdock Rails deployed with branch #{stage == :production ? "master" : branch} on #frontend #deploy ##{rails_env}", 
+        :subject => "#{flowdock_project_name} deployed with branch #{branch} on ##{rails_env}", 
         :content => notification_message, 
-        :tags => ["frontend", "deploy", "##{rails_env}"])
+        :tags => ["deploy", "##{rails_env}"].merge(flowdock_deploy_tags))
     end
 
     def notification_message
