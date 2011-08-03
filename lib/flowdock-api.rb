@@ -32,7 +32,7 @@ module FlowdockApi
 
     def send_message(params)
       raise InvalidMessageError, "Message must have both :subject and :content" if params[:subject].blank? || params[:content].blank?
-      raise InvalidMessageError, "Message must have :format with one of following values: html" if params[:format].blank? || !["html"].include?(params[:format])
+      raise InvalidMessageError, "Message must have :format with one of following values: html" if !params[:format].blank? && !["html"].include?(params[:format])
 
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || tag.blank? }
