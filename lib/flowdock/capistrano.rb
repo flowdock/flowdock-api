@@ -46,6 +46,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       else
         message = "Branch #{source.head} was deployed to #{host}. Previously deployed branch was #{current_branch}."
       end
+      message
     end
   end
 
