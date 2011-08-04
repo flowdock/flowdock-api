@@ -45,7 +45,7 @@ module Flowdock
 
       # Send the request
       resp = self.class.post(get_flowdock_api_url, :body => params)
-      raise ApiError, "Flowdock API returned error: #{resp.body}" unless resp.code == 200
+      raise ApiError, (resp.code == 500 ? "Flowdock API returned error: #{resp.body}" : "HTTP Error #{resp.code}") unless resp.code == 200
       true
     end
   
