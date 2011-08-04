@@ -22,7 +22,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       flowdock_api.send_message(:format => "html", 
         :subject => "#{flowdock_project_name} deployed with branch #{branch} on ##{rails_env}", 
         :content => notification_message, 
-        :tags => ["deploy", "#{rails_env}"] | flowdock_deploy_tags
+        :tags => ["deploy", "#{rails_env}"] | flowdock_deploy_tags)
     end
 
     def notification_message
