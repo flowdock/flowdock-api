@@ -34,7 +34,7 @@ Capistrano::Configuration.instance(:must_exist).load do
           commits.each do |c|
             short, long = c.message.split(/\n+/, 2)
 
-            message << "\n<div style=\"margin-bottom: 10px\"><div class=\"ui-corner-all\" style=\"background:url(http://gravatar.com/avatar/#{MD5::md5(c.author.email.downcase)}?s=30) no-repeat scroll center;height:30px;width:30px;float:left;margin-right:5px;\">&nbsp;</div>"
+            message << "\n<div style=\"margin-bottom: 10px\"><div style=\"height:30px;width:30px;float:left;margin-right:5px;\"><img src=\"http://gravatar.com/avatar/#{MD5::md5(c.author.email.downcase)}?s=30\" /></div>"
             message << "<div style=\"padding-left: 35px;\">#{CGI.escapeHTML(short)}<br/>"
             if long
               long.gsub!(/\n/, '<br />')
