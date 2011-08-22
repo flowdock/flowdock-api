@@ -31,6 +31,8 @@ module Flowdock
 
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || tag.blank? }
+      
+      link = (!params[:link].blank?) ? params[:link] : nil
 
       params = {
         :source => @source,
@@ -38,10 +40,11 @@ module Flowdock
         :from_name => from[:name],
         :from_address => from[:address],
         :subject => params[:subject],
-        :content => params[:content]
+        :content => params[:content],
       }
       params[:tags] = tags.join(",") if tags.size > 0
       params[:project] = @project unless @project.blank?
+      params[:link] = link unless link.blank?
 
       # Send the request
       resp = self.class.post(get_flowdock_api_url, :body => params)
