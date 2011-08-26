@@ -85,11 +85,13 @@ describe Flowdock do
             :from_address => "eric@example.com",
             :subject => "Hello World",
             :content => @example_content,
-            :tags => "cool,stuff"
+            :tags => "cool,stuff",
+            :link => "http://www.flowdock.com/"
           }).
           to_return(:body => "", :status => 200)
 
-        @flow.send_message(:subject => "Hello World", :content => @example_content, :tags => ["cool", "stuff"]).should be_true
+        @flow.send_message(:subject => "Hello World", :content => @example_content, 
+          :tags => ["cool", "stuff"], :link => "http://www.flowdock.com/").should be_true
       }.should_not raise_error
     end
     
@@ -104,7 +106,7 @@ describe Flowdock do
             :from_address => "invalid@nodeta.fi",
             :subject => "Hello World",
             :content => @example_content,
-            :tags => "cool,stuff"
+            :tags => "cool,stuff",
           }).
           to_return(:body => "", :status => 200)
 
