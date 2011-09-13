@@ -1,11 +1,18 @@
 require 'flowdock'
 require 'grit'
+require 'digest/md5'
+require 'cgi'
 
 Capistrano::Configuration.instance(:must_exist).load do
   set :flowdock_send_notification, false
+  
+  set(:current_branch) do
+    capture("cat #{current_path}/BRANCH").chomp rescue "master"
+  end
 
   namespace :flowdock do
     task :set_flowdock_api do
+      set :rails_env, (!stage.nil?) ? stage : ENV['RAILS_ENV']
       set :repo, Grit::Repo.new(".")
       config = Grit::Config.new(repo)
       set :flowdock_api, Flowdock::Flow.new(:api_token => flowdock_api_token, 
@@ -27,14 +34,14 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     def notification_message
       if branch == current_branch || stage == :production
-        message = "<p>The following changes were just deployed to #{host}:</p>"
-        commits = repo.commits_between(capture("cat #{previous_release}/REVISION").chomp, current_revision).reverse
+        message = "<p>The following changes were just deployed to #{rails_env}:</p>"
+        commits = repo.commits_between(previous_revision, current_revision).reverse
 
         unless commits.empty?
           commits.each do |c|
             short, long = c.message.split(/\n+/, 2)
 
-            message << "\n<div style=\"margin-bottom: 10px\"><div style=\"height:30px;width:30px;float:left;margin-right:5px;\"><img src=\"http://gravatar.com/avatar/#{MD5::md5(c.author.email.downcase)}?s=30\" /></div>"
+            message << "\n<div style=\"margin-bottom: 10px\"><div style=\"height:30px;width:30px;float:left;margin-right:5px;\"><img src=\"http://gravatar.com/avatar/#{Digest::MD5::hexdigest(c.author.email.downcase)}?s=30\" /></div>"
             message << "<div style=\"padding-left: 35px;\">#{CGI.escapeHTML(short)}<br/>"
             if long
               long.gsub!(/\n/, '<br />')
@@ -44,7 +51,7 @@ Capistrano::Configuration.instance(:must_exist).load do
           end
         end
       else
-        message = "Branch #{source.head} was deployed to #{host}. Previously deployed branch was #{current_branch}."
+        message = "Branch #{source.head} was deployed to #{rails_env}. Previously deployed branch was #{current_branch}."
       end
       message
     end
