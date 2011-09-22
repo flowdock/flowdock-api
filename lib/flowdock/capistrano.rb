@@ -5,12 +5,16 @@ require 'cgi'
 
 Capistrano::Configuration.instance(:must_exist).load do
   set :flowdock_send_notification, false
-  
-  set(:current_branch) do
-    capture("cat #{current_path}/BRANCH").chomp rescue "master"
-  end
 
   namespace :flowdock do
+    task :read_current_deployed_branch do
+      set :current_branch, capture("cat #{current_path}/BRANCH").chomp rescue "master"
+    end
+    
+    task :save_deployed_branch do
+      run "echo '#{source.head}' > #{current_path}/BRANCH"
+    end
+    
     task :set_flowdock_api do
       set :rails_env, (!stage.nil?) ? stage : ENV['RAILS_ENV']
       set :repo, Grit::Repo.new(".")
@@ -33,7 +37,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
 
     def notification_message
-      if branch == current_branch || stage == :production
+      if branch == current_branch
         message = "<p>The following changes were just deployed to #{rails_env}:</p>"
         commits = repo.commits_between(previous_revision, current_revision).reverse
 
@@ -57,6 +61,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   end
 
   before "deploy", "flowdock:trigger_notification"
+  before "deploy", "flowdock:read_current_deployed_branch"
   before "flowdock:notify_deploy_finished", "flowdock:set_flowdock_api"
   after "deploy", "flowdock:notify_deploy_finished"
+  after "deploy", "flowdock:save_deployed_branch"
 end
