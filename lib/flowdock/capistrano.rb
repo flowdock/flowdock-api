@@ -4,11 +4,11 @@ require 'digest/md5'
 require 'cgi'
 
 Capistrano::Configuration.instance(:must_exist).load do
-  set :flowdock_send_notification, false
 
   namespace :flowdock do
     task :read_current_deployed_branch do
-      set :current_branch, capture("cat #{current_path}/BRANCH").chomp rescue "master"
+      current_branch = capture("cat #{current_path}/BRANCH").chomp rescue "master"
+      set :current_branch, current_branch
     end
     
     task :save_deployed_branch do
@@ -22,10 +22,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :flowdock_api, Flowdock::Flow.new(:api_token => flowdock_api_token, 
         :source => "Capistrano deployment", :project => flowdock_project_name,
         :from => {:name => config["user.name"], :address => config["user.email"]})
-    end
-
-    task :trigger_notification do
-      set :flowdock_send_notification, true
     end
 
     task :notify_deploy_finished do
@@ -60,7 +56,6 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
   end
 
-  before "deploy", "flowdock:trigger_notification"
   before "deploy", "flowdock:read_current_deployed_branch"
   before "flowdock:notify_deploy_finished", "flowdock:set_flowdock_api"
   after "deploy", "flowdock:notify_deploy_finished"
