@@ -10,13 +10,13 @@ Capistrano::Configuration.instance(:must_exist).load do
       current_branch = capture("cat #{current_path}/BRANCH").chomp rescue "master"
       set :current_branch, current_branch
     end
-    
+
     task :save_deployed_branch do
       run "echo '#{source.head}' > #{current_path}/BRANCH"
     end
-    
+
     task :set_flowdock_api do
-      set :rails_env, (!stage.nil?) ? stage : ENV['RAILS_ENV']
+      set :rails_env, variables.include?(:stage) ? stage : ENV['RAILS_ENV']
       set :repo, Grit::Repo.new(".")
       config = Grit::Config.new(repo)
       set :flowdock_api, Flowdock::Flow.new(:api_token => flowdock_api_token, 
