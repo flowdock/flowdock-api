@@ -5,21 +5,24 @@
 
 Gem::Specification.new do |s|
   s.name = "flowdock"
-  s.version = "0.1.3"
+  s.version = "0.1.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Antti Pitk\303\244nen"]
-  s.date = "2011-09-26"
+  s.date = "2011-11-08"
   s.email = "team@flowdock.com"
   s.extra_rdoc_files = [
     "README"
   ]
   s.files = [
+    ".document",
     ".rspec",
+    ".travis.yml",
     "Gemfile",
     "MIT-LICENSE",
     "README",
     "Rakefile",
+    "VERSION",
     "flowdock.gemspec",
     "lib/flowdock.rb",
     "lib/flowdock/capistrano.rb",
