@@ -27,7 +27,7 @@ module Flowdock
       raise InvalidParameterError, "Message must have both :subject and :content" if params[:subject].blank? || params[:content].blank?
       
       from = (params[:from].kind_of?(Hash)) ? params[:from] : @from
-      raise InvalidParameterError, "Flow's :from attribute must have both :name and :address" if from[:name].blank? || from[:address].blank?
+      raise InvalidParameterError, "Flow's :from attribute must have :address attribute" if from[:address].blank?
 
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || tag.blank? }
