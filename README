@@ -20,6 +20,8 @@ Install
 
 * gem install flowdock
 
+If you're using JRuby, you'll also need to install jruby-openssl gem.
+
 Example
 -------
 
