@@ -25,6 +25,7 @@ If you're using JRuby, you'll also need to install jruby-openssl gem.
 Example
 -------
 
+  require 'rubygems'
   require 'flowdock'
 
   # create a new Flow object with target flow's api token and sender information
