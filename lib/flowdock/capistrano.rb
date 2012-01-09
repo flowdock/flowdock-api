@@ -58,6 +58,6 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   before "deploy:update_code", "flowdock:read_current_deployed_branch"
   before "flowdock:notify_deploy_finished", "flowdock:set_flowdock_api"
-  after "deploy:restart", "flowdock:notify_deploy_finished"
-  after "deploy:restart", "flowdock:save_deployed_branch"
+  after "deploy:create_symlink", "flowdock:notify_deploy_finished"
+  after "deploy:create_symlink", "flowdock:save_deployed_branch"
 end
