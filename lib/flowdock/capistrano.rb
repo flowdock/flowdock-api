@@ -1,5 +1,4 @@
 require 'flowdock'
-require 'grit'
 require 'digest/md5'
 require 'cgi'
 
@@ -22,8 +21,11 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :set_flowdock_api do
       set :rails_env, variables.include?(:stage) ? stage : ENV['RAILS_ENV']
       begin
+        require 'grit'
         set :repo, Grit::Repo.new(".")
         config = Grit::Config.new(repo)
+      rescue LoadError
+        puts "Flowdock: you need to have Grit gem installed: #{e.to_s}"
       rescue => e
         puts "Flowdock: error in fetching your git repository information: #{e.to_s}"
       end
