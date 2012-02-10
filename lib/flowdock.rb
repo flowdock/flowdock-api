@@ -13,7 +13,7 @@ module Flowdock
     def initialize(options = {})
       @api_token = options[:api_token]
       raise InvalidParameterError, "Flow must have :api_token attribute" if blank?(@api_token)
-      
+
       @source = options[:source]
       raise InvalidParameterError, "Flow must have valid :source attribute, only alphanumeric characters and underscores can be used" if blank?(@source) || !@source.match(/^[a-z0-9\-_ ]+$/i)
 
@@ -25,13 +25,13 @@ module Flowdock
 
     def send_message(params)
       raise InvalidParameterError, "Message must have both :subject and :content" if blank?(params[:subject]) || blank?(params[:content])
-      
+
       from = (params[:from].kind_of?(Hash)) ? params[:from] : @from
       raise InvalidParameterError, "Flow's :from attribute must have :address attribute" if blank?(from[:address])
 
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || blank?(tag) }
-      
+
       link = (!blank?(params[:link])) ? params[:link] : nil
 
       params = {
@@ -48,16 +48,16 @@ module Flowdock
 
       # Send the request
       resp = self.class.post(get_flowdock_api_url, :body => params)
-      raise ApiError, (resp.code == 500 ? "Flowdock API returned error: #{resp.body}" : "HTTP Error #{resp.code}") unless resp.code == 200
+      raise ApiError, "Flowdock API returned error: Status: #{resp.code} Body: #{resp.body}" unless resp.code == 200
       true
     end
-  
+
     private
 
     def blank?(var)
       var.nil? || var.respond_to?(:length) && var.length == 0
     end
-  
+
     def get_flowdock_api_url
       "#{FLOWDOCK_API_URL}/#{@api_token}"
     end
