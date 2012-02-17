@@ -223,6 +223,17 @@ describe Flowdock do
     it "should accept external_user_name in init" do
       lambda {
         stub_request(:post, push_to_chat_url(@token)).
+          with(:body => @valid_parameters.merge(:tags => "cool,stuff", :external_user_name => "foobar2")).
+          to_return(:body => "", :status => 200)
+
+        @flow = Flowdock::Flow.new(:api_token => @token, :external_user_name => "foobar")
+        @flow.push_to_chat(@valid_parameters.merge(:external_user_name => "foobar2"))
+      }.should_not raise_error
+    end
+
+    it "should allow overriding external_user_name" do
+      lambda {
+        stub_request(:post, push_to_chat_url(@token)).
           with(:body => @valid_parameters.merge(:tags => "cool,stuff")).
           to_return(:body => "", :status => 200)
 

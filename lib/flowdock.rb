@@ -22,10 +22,10 @@ module Flowdock
     end
 
     def push_to_team_inbox(params)
-      @source ||= params[:source]
+      @source = params[:source] unless blank?(params[:source])
       raise InvalidParameterError, "Message must have valid :source attribute, only alphanumeric characters and underscores can be used" if blank?(@source) || !@source.match(/^[a-z0-9\-_ ]+$/i)
 
-      @project ||= params[:project]
+      @project = params[:project] unless blank?(params[:project])
       raise InvalidParameterError, "Optional attribute :project can only contain alphanumeric characters and underscores" if !blank?(@project) && !@project.match(/^[a-z0-9\-_ ]+$/i)
 
       raise InvalidParameterError, "Message must have both :subject and :content" if blank?(params[:subject]) || blank?(params[:content])
@@ -59,7 +59,7 @@ module Flowdock
     def push_to_chat(params)
       raise InvalidParameterError, "Message must have :content" if blank?(params[:content])
 
-      @external_user_name ||= params[:external_user_name]
+      @external_user_name = params[:external_user_name] unless blank?(params[:external_user_name])
       if blank?(@external_user_name) || @external_user_name.match(/^[\S]+$/).nil? || @external_user_name.length > 16
         raise InvalidParameterError, "Message must have :external_user_name that has no whitespace and maximum of 16 characters"
       end
