@@ -42,7 +42,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :notify_deploy_finished do
       # send message to the flow
       begin
-        flowdock_api.send_message(:format => "html",
+        flowdock_api.push_to_team_inbox(:format => "html",
           :subject => "#{flowdock_project_name} deployed with branch #{branch} on ##{rails_env}",
           :content => notification_message,
           :tags => ["deploy", "#{rails_env}"] | flowdock_deploy_tags)
