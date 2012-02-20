@@ -8,7 +8,7 @@ Ruby Gem for using the Flowdock Push API. See [Push API documentation](http://ww
 
 flowdock gem is tested on Ruby 1.8.7, 1.9.3 and JRuby.
 
-## Requirements
+## Dependencies
 
 * HTTParty
 * MultiJson
@@ -19,37 +19,26 @@ flowdock gem is tested on Ruby 1.8.7, 1.9.3 and JRuby.
 
 If you're using JRuby, you'll also need to install jruby-openssl gem.
 
-## Posting to Chat
+## Usage
+
+To post content to Chat or Team Inbox, you need to use the target flow's API token. They can be found from [tokens page](https://www.flowdock.com/account/tokens).
+
+### Posting to Chat
 
     require 'rubygems'
     require 'flowdock'
 
     # create a new Flow object with target flow's api token and external user name (enough for posting to Chat)
-    flow = Flowdock::Flow.new(:api_token => "56188e2003e370c6efa9711988f7bf02", :external_user_name => "John")
+    flow = Flowdock::Flow.new(:api_token => "__FLOW_TOKEN__", :external_user_name => "John")
 
     # send message to Chat
     flow.push_to_chat(:content => "Hello!", :tags => ["cool", "stuff"])
 
-## Posting to Team Inbox
+### Posting to Team Inbox
 
     # create a new Flow object with target flow's api token and sender information for Team Inbox posting
-    flow = Flowdock::Flow.new(:api_token => "56188e2003e370c6efa9711988f7bf02",
+    flow = Flowdock::Flow.new(:api_token => "__FLOW_TOKEN__",
       :source => "myapp", :from => {:name => "John Doe", :address => "john.doe@example.com"})
-
-    # send message to Team Inbox
-    flow.push_to_team_inbox(:subject => "Greetings from Flowdock API Gem!",
-      :content => "<h2>It works!</h2><p>Now you can start developing your awesome application for Flowdock.</p>",
-      :tags => ["cool", "stuff"], :link => "http://www.flowdock.com/")
-
-
-## Posting to both
-
-    # create a new Flow object with target flow's api token, external user name and sender information
-    flow = Flowdock::Flow.new(:api_token => "56188e2003e370c6efa9711988f7bf02", :external_user_name => "John",
-      :source => "myapp", :from => {:name => "John Doe", :address => "john.doe@example.com"})
-
-    # send message to Chat
-    flow.push_to_chat(:content => "Hello!", :tags => ["cool", "stuff"])
 
     # send message to Team Inbox
     flow.push_to_team_inbox(:subject => "Greetings from Flowdock API Gem!",
@@ -83,4 +72,4 @@ The Flowdock API Ruby Gem includes a ready task for sending deployment notificat
 
 ## Copyright
 
-Copyright (c) 2011 Flowdock Ltd. See MIT-LICENSE for further details.
+Copyright (c) 2012 Flowdock Ltd. See LICENSE for further details.
