@@ -5,13 +5,14 @@
 
 Gem::Specification.new do |s|
   s.name = "flowdock"
-  s.version = "0.1.11"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Antti Pitk\u{e4}nen"]
-  s.date = "2012-01-18"
+  s.date = "2012-02-20"
   s.email = "team@flowdock.com"
   s.extra_rdoc_files = [
+    "LICENSE",
     "README.md"
   ]
   s.files = [
@@ -19,7 +20,7 @@ Gem::Specification.new do |s|
     ".rspec",
     ".travis.yml",
     "Gemfile",
-    "MIT-LICENSE",
+    "LICENSE",
     "README.md",
     "Rakefile",
     "VERSION",
@@ -40,6 +41,7 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<httparty>, ["~> 0.7"])
+      s.add_runtime_dependency(%q<multi_json>, [">= 0"])
       s.add_development_dependency(%q<rdoc>, [">= 2.4.2"])
       s.add_development_dependency(%q<rspec>, ["~> 2.6"])
       s.add_development_dependency(%q<webmock>, [">= 0"])
@@ -48,6 +50,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<jruby-openssl>, [">= 0"])
     else
       s.add_dependency(%q<httparty>, ["~> 0.7"])
+      s.add_dependency(%q<multi_json>, [">= 0"])
       s.add_dependency(%q<rdoc>, [">= 2.4.2"])
       s.add_dependency(%q<rspec>, ["~> 2.6"])
       s.add_dependency(%q<webmock>, [">= 0"])
@@ -57,6 +60,7 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<httparty>, ["~> 0.7"])
+    s.add_dependency(%q<multi_json>, [">= 0"])
     s.add_dependency(%q<rdoc>, [">= 2.4.2"])
     s.add_dependency(%q<rspec>, ["~> 2.6"])
     s.add_dependency(%q<webmock>, [">= 0"])
