@@ -13,6 +13,14 @@ describe Flowdock do
         @flow = Flowdock::Flow.new(:api_token => "")
       }.should raise_error(Flowdock::Flow::InvalidParameterError)
     end
+
+    it "should succeed with proxy env set" do
+      ENV['HTTPS_PROXY'] = "https://localhost:9999/"
+      lambda {
+        @flow = Flowdock::Flow.new(:api_token => "test")
+      }.should_not raise_error
+    end
+
   end
 
   describe "with sending Team Inbox messages" do

@@ -103,7 +103,7 @@ module Flowdock
       unless resp.code == 200
         begin
           # should have JSON response
-          json = MultiJson.decode(resp.body)
+          json = MultiJson.load(resp.body)
           errors = json["errors"].map {|k,v| "#{k}: #{v.join(',')}"}.join("\n") unless json["errors"].nil?
           raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}\n Errors:\n#{errors}"
         rescue MultiJson::DecodeError
