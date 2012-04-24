@@ -1,7 +1,7 @@
 source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 
-gem "httparty", "~> 0.7"
+gem "httparty", "~> 0.6.1"
 gem "multi_json"
 
 # Add dependencies to develop your gem here.
