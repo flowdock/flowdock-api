@@ -7,6 +7,14 @@ module Flowdock
 
   class Flow
     include HTTParty
+
+    ##
+    # Accommodate an HTTPS proxy setting
+    if proxy = ENV['HTTPS_PROXY']
+      proxy = URI.parse(proxy)
+      http_proxy proxy.host, proxy.port
+    end
+
     class InvalidParameterError < StandardError; end
     class ApiError < StandardError; end
 
