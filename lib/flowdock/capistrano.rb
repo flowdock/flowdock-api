@@ -24,7 +24,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         require 'grit'
         set :repo, Grit::Repo.new(".")
         config = Grit::Config.new(repo)
-      rescue LoadError
+      rescue LoadError => e
         puts "Flowdock: you need to have Grit gem installed: #{e.to_s}"
       rescue => e
         puts "Flowdock: error in fetching your git repository information: #{e.to_s}"
