@@ -10,7 +10,9 @@ module Flowdock
     class InvalidParameterError < StandardError; end
     class ApiError < StandardError; end
 
-    # Required options keys: :api_token, optional keys: :external_user_name, :source, :from => { :name, :address }
+    attr_reader :api_token, :source, :project, :from, :external_user_name
+
+    # Required options keys: :api_token, optional keys: :external_user_name, :source, :project, :from => { :name, :address }
     def initialize(options = {})
       @api_token = options[:api_token]
       raise InvalidParameterError, "Flow must have :api_token attribute" if blank?(@api_token)
