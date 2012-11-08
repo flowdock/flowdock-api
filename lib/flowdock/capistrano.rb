@@ -31,9 +31,12 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       begin
-        set :flowdock_api, Flowdock::Flow.new(:api_token => flowdock_api_token,
+        flows = Array(flowdock_api_token).map do |api_token|
+          Flowdock::Flow.new(:api_token => api_token,
           :source => "Capistrano deployment", :project => flowdock_project_name,
           :from => {:name => config["user.name"], :address => config["user.email"]})
+        end
+        set :flowdock_api, flows
       rescue => e
         puts "Flowdock: error in configuring Flowdock API: #{e.to_s}"
       end
@@ -42,10 +45,12 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :notify_deploy_finished do
       # send message to the flow
       begin
-        flowdock_api.push_to_team_inbox(:format => "html",
-          :subject => "#{flowdock_project_name} deployed with branch #{branch} on ##{rails_env}",
-          :content => notification_message,
-          :tags => ["deploy", "#{rails_env}"] | flowdock_deploy_tags)
+        flowdock_api.each do |flow|
+          flow.push_to_team_inbox(:format => "html",
+            :subject => "#{flowdock_project_name} deployed with branch #{branch} on ##{rails_env}",
+            :content => notification_message,
+            :tags => ["deploy", "#{rails_env}"] | flowdock_deploy_tags)
+        end
       rescue => e
         puts "Flowdock: error in sending notification to your flow: #{e.to_s}"
       end
