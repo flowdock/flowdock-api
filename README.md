@@ -66,7 +66,7 @@ The Flowdock API Ruby Gem includes a ready task for sending deployment notificat
  # for Flowdock Gem notifications
  set :flowdock_project_name, "My project"
  set :flowdock_deploy_tags, ["frontend"]
- set :flowdock_api_token, "_YOUR_API_TOKEN_HERE_"
+ set :flowdock_api_token, ["_YOUR_API_TOKEN_HERE_"]
 ```
 
 
