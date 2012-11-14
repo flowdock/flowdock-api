@@ -12,7 +12,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     task :save_deployed_branch do
       begin
-        run "echo '#{source.head}' > #{current_path}/BRANCH"
+        run "echo '#{source.head.chomp}' > #{current_path}/BRANCH"
       rescue => e
         puts "Flowdock: error in saving deployed branch information: #{e.to_s}"
       end
