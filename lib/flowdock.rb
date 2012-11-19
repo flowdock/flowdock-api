@@ -12,7 +12,8 @@ module Flowdock
 
     attr_reader :api_token, :source, :project, :from, :external_user_name
 
-    # Required options keys: :api_token, optional keys: :external_user_name, :source, :project, :from => { :name, :address }
+    # Required options keys: :api_token
+    # Optional keys: :external_user_name, :source, :project, :from => { :name, :address }, :reply_to
     def initialize(options = {})
       @api_token = options[:api_token]
       raise InvalidParameterError, "Flow must have :api_token attribute" if blank?(@api_token)
@@ -20,6 +21,7 @@ module Flowdock
       @source = options[:source] || nil
       @project = options[:project] || nil
       @from = options[:from] || {}
+      @reply_to = options[:reply_to] || nil
       @external_user_name = options[:external_user_name] || nil
     end
 
@@ -35,6 +37,8 @@ module Flowdock
       from = (params[:from].kind_of?(Hash)) ? params[:from] : @from
       raise InvalidParameterError, "Message's :from attribute must have :address attribute" if blank?(from[:address])
 
+      reply_to = (!blank?(params[:reply_to])) ? params[:reply_to] : @reply_to
+
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || blank?(tag) }
 
@@ -48,6 +52,7 @@ module Flowdock
         :content => params[:content],
       }
       params[:from_name] = from[:name] unless blank?(from[:name])
+      params[:reply_to] = reply_to unless blank?(reply_to)
       params[:tags] = tags.join(",") if tags.size > 0
       params[:project] = @project unless blank?(@project)
       params[:link] = link unless blank?(link)

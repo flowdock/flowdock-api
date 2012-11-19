@@ -19,7 +19,7 @@ describe Flowdock do
     before(:each) do
       @token = "test"
       @flow_attributes = {:api_token => @token, :source => "myapp", :project => "myproject",
-       :from => {:name => "Eric Example", :address => "eric@example.com"}}
+       :from => {:name => "Eric Example", :address => "eric@example.com"}, :reply_to => "john@example.com" }
       @flow = Flowdock::Flow.new(@flow_attributes)
       @example_content = "<h1>Hello</h1>\n<p>Let's rock and roll!</p>"
       @valid_attributes = {:subject => "Hello World", :content => @example_content,
@@ -66,6 +66,12 @@ describe Flowdock do
       }.should raise_error(Flowdock::Flow::InvalidParameterError)
     end
 
+    it "should send without reply_to address" do
+      lambda {
+        @flow.push_to_team_inbox(@valid_attributes.merge(:reply_to => ""))
+      }.should_not raise_error(Flowdock::Flow::InvalidParameterError)
+    end
+
     it "should succeed with correct token, source and sender information" do
       lambda {
         stub_request(:post, push_to_team_inbox_url(@token)).
@@ -74,6 +80,7 @@ describe Flowdock do
             :format => "html",
             :from_name => "Eric Example",
             :from_address => "eric@example.com",
+            :reply_to => "john@example.com",
             :subject => "Hello World",
             :content => @example_content,
             :tags => "cool,stuff",
@@ -94,6 +101,7 @@ describe Flowdock do
             :project => "myproject",
             :format => "html",
             :from_address => "eric@example.com",
+            :reply_to => "john@example.com",
             :subject => "Hello World",
             :content => @example_content,
             :tags => "cool,stuff",
@@ -114,6 +122,7 @@ describe Flowdock do
             :format => "html",
             :from_name => "Eric Example",
             :from_address => "eric@example.com",
+            :reply_to => "john@example.com",
             :subject => "Hello World",
             :content => @example_content,
             :tags => "cool,stuff",
@@ -134,6 +143,7 @@ describe Flowdock do
             :format => "html",
             :from_name => "Eric Example",
             :from_address => "eric@example.com",
+            :reply_to => "john@example.com",
             :subject => "Hello World",
             :content => @example_content,
             :tags => "cool,stuff",
@@ -155,6 +165,7 @@ describe Flowdock do
             :format => "html",
             :from_name => "Test",
             :from_address => "invalid@nodeta.fi",
+            :reply_to => "foobar@example.com",
             :subject => "Hello World",
             :content => @example_content,
             :tags => "cool,stuff",
@@ -162,7 +173,7 @@ describe Flowdock do
           to_return(:body => "", :status => 200)
 
         @flow.push_to_team_inbox(:subject => "Hello World", :content => @example_content, :tags => ["cool", "stuff"],
-          :from => {:name => "Test", :address => "invalid@nodeta.fi"}).should be_true
+          :from => {:name => "Test", :address => "invalid@nodeta.fi"}, :reply_to => "foobar@example.com").should be_true
       }.should_not raise_error
     end
 
@@ -175,6 +186,7 @@ describe Flowdock do
             :format => "html",
             :from_name => "Eric Example",
             :from_address => "eric@example.com",
+            :reply_to => "john@example.com",
             :subject => "Hello World",
             :content => @example_content
           }).
