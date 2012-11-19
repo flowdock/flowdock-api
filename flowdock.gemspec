@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "flowdock"
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Antti Pitk\u{e4}nen"]
-  s.date = "2012-05-03"
+  s.date = "2012-11-19"
   s.email = "team@flowdock.com"
   s.extra_rdoc_files = [
     "LICENSE",
@@ -33,7 +33,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/flowdock/flowdock-api"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
+  s.rubygems_version = "1.8.24"
   s.summary = "Ruby Gem for using Flowdock's API"
 
   if s.respond_to? :specification_version then
