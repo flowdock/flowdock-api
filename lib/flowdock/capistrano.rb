@@ -19,7 +19,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
 
     task :set_flowdock_api do
-      set :rails_env, variables.include?(:stage) ? stage : ENV['RAILS_ENV']
+      set :rails_env, fetch(:rails_env, variables.include?(:stage) ? stage : ENV['RAILS_ENV'])
       begin
         require 'grit'
         set :repo, Grit::Repo.new(".")
