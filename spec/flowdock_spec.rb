@@ -13,6 +13,12 @@ describe Flowdock do
         @flow = Flowdock::Flow.new(:api_token => "")
       }.should raise_error(Flowdock::Flow::InvalidParameterError)
     end
+
+    it "should succeed with array of tokens" do
+      lambda {
+        @flow = Flowdock::Flow.new(:api_token => ["test", "foobar"])
+      }.should_not raise_error
+    end
   end
 
   describe "with sending Team Inbox messages" do
@@ -89,6 +95,28 @@ describe Flowdock do
           to_return(:body => "", :status => 200)
 
         @flow = Flowdock::Flow.new(@flow_attributes.merge(:project => ""))
+        @flow.push_to_team_inbox(@valid_attributes)
+      }.should_not raise_error
+    end
+
+    it "should succeed with correct params and multiple tokens" do
+      lambda {
+        tokens = ["test", "foobar"]
+        stub_request(:post, push_to_team_inbox_url(tokens)).
+          with(:body => {
+            :source => "myapp",
+            :format => "html",
+            :from_name => "Eric Example",
+            :from_address => "eric@example.com",
+            :reply_to => "john@example.com",
+            :subject => "Hello World",
+            :content => @example_content,
+            :tags => "cool,stuff",
+            :link => "http://www.flowdock.com/"
+          }).
+          to_return(:body => "", :status => 200)
+
+        @flow = Flowdock::Flow.new(@flow_attributes.merge(:project => "", :api_token => tokens))
         @flow.push_to_team_inbox(@valid_attributes)
       }.should_not raise_error
     end
@@ -267,10 +295,18 @@ describe Flowdock do
   end
 
   def push_to_chat_url(token)
-    "#{Flowdock::FLOWDOCK_API_URL}/messages/chat/#{token}"
+    "#{Flowdock::FLOWDOCK_API_URL}/messages/chat/#{join_tokens(token)}"
   end
 
   def push_to_team_inbox_url(token)
-    "#{Flowdock::FLOWDOCK_API_URL}/messages/team_inbox/#{token}"
+    "#{Flowdock::FLOWDOCK_API_URL}/messages/team_inbox/#{join_tokens(token)}"
+  end
+
+  def join_tokens(tokens)
+    if tokens.kind_of?(Array)
+      tokens.join(",")
+    else
+      tokens.to_s
+    end
   end
 end

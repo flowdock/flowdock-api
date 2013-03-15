@@ -15,7 +15,11 @@ module Flowdock
     # Required options keys: :api_token
     # Optional keys: :external_user_name, :source, :project, :from => { :name, :address }, :reply_to
     def initialize(options = {})
-      @api_token = options[:api_token]
+      @api_token = if options[:api_token].kind_of?(Array)
+        options[:api_token].join(",")
+      else
+        options[:api_token].to_s
+      end
       raise InvalidParameterError, "Flow must have :api_token attribute" if blank?(@api_token)
 
       @source = options[:source] || nil

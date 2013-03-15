@@ -45,6 +45,16 @@ To post content to Chat or Team Inbox, you need to use the target flow's API tok
       :content => "<h2>It works!</h2><p>Now you can start developing your awesome application for Flowdock.</p>",
       :tags => ["cool", "stuff"], :link => "http://www.flowdock.com/")
 
+### Posting to multiple flows
+
+    require 'rubygems'
+    require 'flowdock'
+
+    # create a new Flow object with the api tokens of the target flows
+    flow = Flowdock::Flow.new(:api_token => ["__FLOW_TOKEN__", "__ANOTHER_FLOW_TOKEN__"], ... )
+
+    # see above examples of posting to Chat or Team Inbox
+
 ## API methods
 
 * Flow methods
