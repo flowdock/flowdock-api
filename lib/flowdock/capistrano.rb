@@ -19,7 +19,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
 
     task :set_flowdock_api do
-      set :rails_env, fetch(:rails_env, variables.include?(:stage) ? stage : ENV['RAILS_ENV'])
+      set :flowdock_deploy_env, fetch(:stage, fetch(:rails_env, ENV["RAILS_ENV"] || "production"))
       begin
         require 'grit'
         set :repo, Grit::Repo.new(".")
@@ -47,9 +47,9 @@ Capistrano::Configuration.instance(:must_exist).load do
       begin
         flowdock_api.each do |flow|
           flow.push_to_team_inbox(:format => "html",
-            :subject => "#{flowdock_project_name} deployed with branch #{branch} on ##{rails_env}",
+            :subject => "#{flowdock_project_name} deployed with branch #{branch} on ##{flowdock_deploy_env}",
             :content => notification_message,
-            :tags => ["deploy", "#{rails_env}"] | flowdock_deploy_tags)
+            :tags => ["deploy", "#{flowdock_deploy_env}"] | flowdock_deploy_tags)
         end
       rescue => e
         puts "Flowdock: error in sending notification to your flow: #{e.to_s}"
@@ -58,7 +58,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     def notification_message
       if branch == current_branch
-        message = "<p>The following changes were just deployed to #{rails_env}:</p>"
+        message = "<p>The following changes were just deployed to #{flowdock_deploy_env}:</p>"
         commits = repo.commits_between(previous_revision, current_revision).reverse
 
         unless commits.empty?
@@ -74,7 +74,7 @@ Capistrano::Configuration.instance(:must_exist).load do
           end
         end
       else
-        message = "Branch #{source.head} was deployed to #{rails_env}. Previously deployed branch was #{current_branch}."
+        message = "Branch #{source.head} was deployed to #{flowdock_deploy_env}. Previously deployed branch was #{current_branch}."
       end
       message
     end
