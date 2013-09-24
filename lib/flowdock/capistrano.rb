@@ -50,7 +50,7 @@ Capistrano::Configuration.instance(:must_exist).load do
             :subject => "#{flowdock_project_name} deployed with branch #{branch} on ##{flowdock_deploy_env}",
             :content => notification_message,
             :tags => ["deploy", "#{flowdock_deploy_env}"] | flowdock_deploy_tags)
-        end
+        end unless dry_run
       rescue => e
         puts "Flowdock: error in sending notification to your flow: #{e.to_s}"
       end
