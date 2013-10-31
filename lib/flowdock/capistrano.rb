@@ -18,7 +18,7 @@ namespace :flowdock do
   task :save_deployed_branch do
     on roles(:all) do
       begin
-        run("echo '#{fetch(:repo).head.name.chomp}' > #{current_path}/BRANCH")
+        execute("echo '#{fetch(:repo).head.name.chomp}' > #{current_path}/BRANCH")
       rescue => e
         puts "Flowdock: error in saving deployed branch information: #{e.to_s}"
       end
