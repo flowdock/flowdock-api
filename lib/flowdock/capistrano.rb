@@ -4,15 +4,24 @@ require 'cgi'
 
 namespace :flowdock do
   task :read_current_deployed_branch do
-    current_branch = capture("cat #{current_path}/BRANCH").chomp rescue "master"
-    set :current_branch, current_branch
+    on roles(:all) do
+      begin
+        current_branch = capture(:cat, "#{current_path}/BRANCH").chomp
+      rescue
+        current_branch = "master"
+      end
+
+      set :current_branch, current_branch
+    end
   end
 
   task :save_deployed_branch do
-    begin
-      run "echo '#{source.head.chomp}' > #{current_path}/BRANCH"
-    rescue => e
-      puts "Flowdock: error in saving deployed branch information: #{e.to_s}"
+    on roles(:all) do
+      begin
+        run("echo '#{fetch(:repo).head.name.chomp}' > #{current_path}/BRANCH")
+      rescue => e
+        puts "Flowdock: error in saving deployed branch information: #{e.to_s}"
+      end
     end
   end
 
@@ -20,7 +29,8 @@ namespace :flowdock do
     set :flowdock_deploy_env, fetch(:stage, fetch(:rails_env, ENV["RAILS_ENV"] || "production"))
     begin
       require 'grit'
-      set :repo, Grit::Repo.new(".")
+      repo = Grit::Repo.new(".")
+      set :repo, repo
       config = Grit::Config.new(repo)
     rescue LoadError => e
       puts "Flowdock: you need to have Grit gem installed: #{e.to_s}"
@@ -29,9 +39,9 @@ namespace :flowdock do
     end
 
     begin
-      flows = Array(flowdock_api_token).map do |api_token|
+      flows = Array(fetch(:flowdock_api_token)).map do |api_token|
         Flowdock::Flow.new(:api_token => api_token,
-        :source => "Capistrano deployment", :project => flowdock_project_name,
+        :source => "Capistrano deployment", :project => fetch(:flowdock_project_name),
         :from => {:name => config["user.name"], :address => config["user.email"]})
       end
       set :flowdock_api, flows
@@ -43,21 +53,21 @@ namespace :flowdock do
   task :notify_deploy_finished do
     # send message to the flow
     begin
-      flowdock_api.each do |flow|
+      fetch(:flowdock_api).each do |flow|
         flow.push_to_team_inbox(:format => "html",
-          :subject => "#{flowdock_project_name} deployed with branch #{branch} on ##{flowdock_deploy_env}",
+          :subject => "#{fetch(:flowdock_project_name)} deployed with branch #{fetch(:branch)} on ##{fetch(:flowdock_deploy_env)}",
           :content => notification_message,
-          :tags => ["deploy", "#{flowdock_deploy_env}"] | flowdock_deploy_tags)
-      end unless dry_run
+          :tags => ["deploy", "#{fetch(:flowdock_deploy_env)}"] | fetch(:flowdock_deploy_tags))
+      end unless fetch('dry_run')
     rescue => e
       puts "Flowdock: error in sending notification to your flow: #{e.to_s}"
     end
   end
 
   def notification_message
-    if branch == current_branch
+    if fetch(:branch) == fetch(:current_branch)
       message = "<p>The following changes were just deployed to #{flowdock_deploy_env}:</p>"
-      commits = repo.commits_between(previous_revision, current_revision).reverse
+      commits = fetch(:repo).commits_between(previous_revision, current_revision).reverse
 
       unless commits.empty?
         commits.each do |c|
@@ -72,7 +82,7 @@ namespace :flowdock do
         end
       end
     else
-      message = "Branch #{source.head} was deployed to #{flowdock_deploy_env}. Previously deployed branch was #{current_branch}."
+      message = "Branch #{fetch(:repo).head.name} was deployed to #{fetch(:flowdock_deploy_env)}. Previously deployed branch was #{fetch(:current_branch)}."
     end
     message
   end
