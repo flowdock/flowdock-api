@@ -67,7 +67,9 @@ namespace :flowdock do
   def notification_message
     if fetch(:branch) == fetch(:current_branch)
       message = "<p>The following changes were just deployed to #{fetch(:flowdock_deploy_env)}:</p>"
-      commits = fetch(:repo).commits_between(previous_revision, current_revision).reverse
+      commits = fetch(:repo).commits_between(
+        fetch(:previous_revision), fetch(:current_revision)
+      ).reverse
 
       unless commits.empty?
         commits.each do |c|
