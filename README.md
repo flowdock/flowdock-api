@@ -6,7 +6,7 @@ Ruby Gem for using the Flowdock Push API. See [Push API documentation](http://ww
 
 [![Build Status](https://secure.travis-ci.org/flowdock/flowdock-api.png)](http://travis-ci.org/flowdock/flowdock-api)
 
-flowdock gem is tested on Ruby 1.8.7, 1.9.3 and JRuby.
+flowdock gem is tested on Ruby 1.9.3 and JRuby.
 
 ## Dependencies
 
