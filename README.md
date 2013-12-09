@@ -85,6 +85,9 @@ set :flowdock_deploy_tags, ["frontend"]
 set :flowdock_api_token, ["_YOUR_API_TOKEN_HERE_"]
 ```
 
+## Mina deployment
+
+See [mina-flowdock](https://github.com/elskwid/mina-flowdock) for details.
 
 ## Copyright
 
