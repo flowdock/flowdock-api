@@ -72,22 +72,12 @@ flow = Flowdock::Flow.new(:api_token => ["__FLOW_TOKEN__", "__ANOTHER_FLOW_TOKEN
   `send_message(params)` - Deprecated. Please use `push_to_team_inbox` instead.
 
 
-## Capistrano deployment task
+## Deployment notifications
 
-The Flowdock API Ruby Gem includes a ready task for sending deployment notifications with Capistrano (you need to have Grit installed too). Just add the task into your deploy.rb file and configure the settings to match your project and flow:
+There are separate gems for deployment notifications:
 
-```ruby
-require 'flowdock/capistrano'
-
-# for Flowdock Gem notifications
-set :flowdock_project_name, "My project"
-set :flowdock_deploy_tags, ["frontend"]
-set :flowdock_api_token, ["_YOUR_API_TOKEN_HERE_"]
-```
-
-## Mina deployment
-
-See [mina-flowdock](https://github.com/elskwid/mina-flowdock) for details.
+* [capistrano-flowdock](https://github.com/flowdock/capistrano-flowdock)
+* [mina-flowdock](https://github.com/elskwid/mina-flowdock)
 
 ## Copyright
 
