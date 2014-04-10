@@ -11,6 +11,6 @@ group :development do
   gem "rspec", "~> 2.6"
   gem "webmock"
   gem "bundler", "~> 1.0"
-  gem "jeweler", "~> 1.6.4"
+  gem "jeweler", ">= 2.0.1"
   gem "jruby-openssl", :platforms => :jruby
 end
