@@ -47,7 +47,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<rspec>, ["~> 2.6"])
       s.add_development_dependency(%q<webmock>, [">= 0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0"])
-      s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
+      s.add_development_dependency(%q<jeweler>, [">= 2.0.1"])
       s.add_development_dependency(%q<jruby-openssl>, [">= 0"])
     else
       s.add_dependency(%q<httparty>, ["~> 0.7"])
@@ -56,7 +56,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rspec>, ["~> 2.6"])
       s.add_dependency(%q<webmock>, [">= 0"])
       s.add_dependency(%q<bundler>, ["~> 1.0"])
-      s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
+      s.add_dependency(%q<jeweler>, [">= 2.0.1"])
       s.add_dependency(%q<jruby-openssl>, [">= 0"])
     end
   else
@@ -66,7 +66,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<rspec>, ["~> 2.6"])
     s.add_dependency(%q<webmock>, [">= 0"])
     s.add_dependency(%q<bundler>, ["~> 1.0"])
-    s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
+    s.add_dependency(%q<jeweler>, [">= 2.0.1"])
     s.add_dependency(%q<jruby-openssl>, [">= 0"])
   end
 end
