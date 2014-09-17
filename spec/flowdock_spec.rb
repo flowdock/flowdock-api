@@ -292,6 +292,28 @@ describe Flowdock do
         @flow.push_to_chat(@valid_parameters).should be_false
       }.should raise_error(Flowdock::Flow::ApiError)
     end
+
+    it "should send supplied message_id to create comments" do
+      lambda {
+        stub_request(:post, push_to_chat_url(@token)).
+          with(:body => /message_id=12345/).
+          to_return(:body => "", :status => 200)
+
+        @flow = Flowdock::Flow.new(:api_token => @token, :external_user_name => "foobar")
+        @flow.push_to_chat(@valid_parameters.merge(:message_id => 12345))
+      }.should_not raise_error
+    end
+
+    it "should send supplied thread_id to post to threads" do
+      lambda {
+        stub_request(:post, push_to_chat_url(@token)).
+          with(:body => /thread_id=acdcabbacd/).
+          to_return(:body => "", :status => 200)
+
+        @flow = Flowdock::Flow.new(:api_token => @token, :external_user_name => "foobar")
+        @flow.push_to_chat(@valid_parameters.merge(:thread_id => 'acdcabbacd'))
+      }.should_not raise_error
+    end
   end
 
   def push_to_chat_url(token)

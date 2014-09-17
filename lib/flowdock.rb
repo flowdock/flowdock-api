@@ -77,12 +77,16 @@ module Flowdock
 
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || blank?(tag) }
+      thread_id = params[:thread_id]
+      message_id = params[:message_id]
 
       params = {
         :content => params[:content],
         :external_user_name => @external_user_name
       }
       params[:tags] = tags.join(",") if tags.size > 0
+      params[:thread_id] = thread_id if thread_id
+      params[:message_id] = message_id if message_id
 
       # Send the request
       resp = self.class.post(get_flowdock_api_url("messages/chat"), :body => params)
