@@ -5,11 +5,31 @@ require 'multi_json'
 module Flowdock
   FLOWDOCK_API_URL = "https://api.flowdock.com/v1"
 
+  class InvalidParameterError < StandardError; end
+  class ApiError < StandardError; end
+
+  module Helpers
+    def blank?(var)
+      var.nil? || var.respond_to?(:length) && var.length == 0
+    end
+
+    def handle_response(resp)
+      unless resp.code >= 200 && resp.code < 300
+        begin
+          # should have JSON response
+          json = MultiJson.decode(resp.body)
+          errors = json["errors"].map {|k,v| "#{k}: #{v.join(',')}"}.join("\n") unless json["errors"].nil?
+          raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}\n Errors:\n#{errors}"
+        rescue MultiJson::DecodeError
+          raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\nBody: #{resp.body}"
+        end
+      end
+    end
+  end
+
   class Flow
     include HTTParty
-    class InvalidParameterError < StandardError; end
-    class ApiError < StandardError; end
-
+    include Helpers
     attr_reader :api_token, :source, :project, :from, :external_user_name
 
     # Required options keys: :api_token
@@ -102,25 +122,42 @@ module Flowdock
 
     private
 
-    def blank?(var)
-      var.nil? || var.respond_to?(:length) && var.length == 0
-    end
-
-    def handle_response(resp)
-      unless resp.code == 200
-        begin
-          # should have JSON response
-          json = MultiJson.decode(resp.body)
-          errors = json["errors"].map {|k,v| "#{k}: #{v.join(',')}"}.join("\n") unless json["errors"].nil?
-          raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}\n Errors:\n#{errors}"
-        rescue MultiJson::DecodeError
-          raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\nBody: #{resp.body}"
-        end
-      end
-    end
-
     def get_flowdock_api_url(path)
       "#{FLOWDOCK_API_URL}/#{path}/#{@api_token}"
     end
+
   end
+
+  class Client
+    include HTTParty
+    include Helpers
+    attr_reader :api_token
+    def initialize(options = {})
+      @api_token = options[:api_token]
+      raise InvalidParameterError, "Client must have :api_token attribute" if blank?(@api_token)
+    end
+
+    def chat_message(params)
+      raise InvalidParameterError, "Message must have :content" if blank?(params[:content])
+      raise InvalidParameterError, "Message must have :flow" if blank?(params[:flow])
+      tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
+      tags.reject! { |tag| !tag.kind_of?(String) || blank?(tag) }
+      event = if params[:message] then 'comment' else 'message' end
+      deliver(api_url(event + 's'), params.merge(tags: tags, event: event))
+    end
+
+    private
+
+    def deliver(url, message)
+      resp = self.class.post(url, :body => message, :basic_auth => {:username => @api_token, :password => ''})
+      handle_response(resp)
+      true
+    end
+
+    def api_url(path)
+      "#{FLOWDOCK_API_URL}/#{path}"
+    end
+  end
+
+
 end

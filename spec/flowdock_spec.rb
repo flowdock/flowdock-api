@@ -11,7 +11,7 @@ describe Flowdock do
     it "should fail without token" do
       lambda {
         @flow = Flowdock::Flow.new(:api_token => "")
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should succeed with array of tokens" do
@@ -36,46 +36,46 @@ describe Flowdock do
       lambda {
         @flow = Flowdock::Flow.new(@flow_attributes.merge(:source => ""))
         @flow.push_to_team_inbox(@valid_attributes)
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should not send when source is not alphanumeric" do
       lambda {
         @flow = Flowdock::Flow.new(@flow_attributes.merge(:source => "$foobar"))
         @flow.push_to_team_inbox(@valid_attributes)
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should not send when project is not alphanumeric" do
       lambda {
         @flow = Flowdock::Flow.new(:api_token => "test", :source => "myapp", :project => "$foobar")
         @flow.push_to_team_inbox(@valid_attributes)
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should not send without sender information" do
       lambda {
         @flow = Flowdock::Flow.new(@flow_attributes.merge(:from => nil))
         @flow.push_to_team_inbox(@valid_attributes)
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should not send without subject" do
       lambda {
         @flow.push_to_team_inbox(@valid_attributes.merge(:subject => ""))
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should not send without content" do
       lambda {
         @flow.push_to_team_inbox(@valid_attributes.merge(:content => ""))
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should send without reply_to address" do
       lambda {
         @flow.push_to_team_inbox(@valid_attributes.merge(:reply_to => ""))
-      }.should_not raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should_not raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should succeed with correct token, source and sender information" do
@@ -221,7 +221,7 @@ describe Flowdock do
           to_return(:body => "Internal Server Error", :status => 500)
 
         @flow.push_to_team_inbox(:subject => "Hello World", :content => @example_content).should be_false
-      }.should raise_error(Flowdock::Flow::ApiError)
+      }.should raise_error(Flowdock::ApiError)
     end
   end
 
@@ -235,19 +235,19 @@ describe Flowdock do
     it "should not send without content" do
       lambda {
         @flow.push_to_chat(@valid_parameters.merge(:content => ""))
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should not send without external_user_name" do
       lambda {
         @flow.push_to_chat(@valid_parameters.merge(:external_user_name => ""))
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should not send with invalid external_user_name" do
       lambda {
         @flow.push_to_chat(@valid_parameters.merge(:external_user_name => "foo bar"))
-      }.should raise_error(Flowdock::Flow::InvalidParameterError)
+      }.should raise_error(Flowdock::InvalidParameterError)
     end
 
     it "should send with valid parameters and return true" do
@@ -290,10 +290,10 @@ describe Flowdock do
             :status => 400)
 
         @flow.push_to_chat(@valid_parameters).should be_false
-      }.should raise_error(Flowdock::Flow::ApiError)
+      }.should raise_error(Flowdock::ApiError)
     end
 
-    it "should send supplied message_id to create comments" do
+    it "should send supplied message to create comments" do
       lambda {
         stub_request(:post, push_to_chat_url(@token)).
           with(:body => /message_id=12345/).
@@ -331,4 +331,67 @@ describe Flowdock do
       tokens.to_s
     end
   end
+end
+
+describe Flowdock::Client do
+
+  let(:token) { SecureRandom.hex(8) }
+
+  describe 'initializing' do
+
+    it 'should initialize with access token' do
+      expect {
+        client = Flowdock::Client.new(api_token: token)
+        expect(client.api_token).to equal(token)
+      }.not_to raise_error
+    end
+    it 'should raise error if initialized without access token' do
+      expect {
+        client = Flowdock::Client.new(api_token: nil)
+      }.to raise_error(Flowdock::InvalidParameterError)
+    end
+  end
+
+  describe 'posting to chat' do
+
+    let(:client) { Flowdock::Client.new(api_token: token) }
+    let(:flow) { SecureRandom.hex(8) }
+
+    it 'posts to /messages' do
+      expect {
+        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
+          with(:body => "flow=#{flow}&content=foobar&event=message").
+          to_return(:status => 200, :body => "", :headers => {})
+        res = client.chat_message(flow: flow, content: 'foobar')
+        expect(res).to be(true)
+      }.not_to raise_error
+    end
+    it 'posts to /comments' do
+      expect {
+        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/comments").
+          with(:body => "flow=#{flow}&content=foobar&message=12345&event=comment").
+          to_return(:status => 200, :body => "", :headers => {})
+        client.chat_message(flow: flow, content: 'foobar', message: 12345)
+      }.not_to raise_error
+    end
+    it 'raises without flow' do
+      expect {
+        client.chat_message(content: 'foobar')
+      }.to raise_error(Flowdock::InvalidParameterError)
+    end
+    it 'raises without content' do
+      expect {
+        client.chat_message(flow: flow)
+      }.to raise_error(Flowdock::InvalidParameterError)
+    end
+    it 'handles error responses' do
+      expect {
+        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
+          to_return(:body => '{"message":"Validation error","errors":{"content":["can\'t be blank"],"external_user_name":["should not contain whitespace"]}}',
+            :status => 400)
+          client.chat_message(flow: flow, content: 'foobar')
+      }.to raise_error(Flowdock::ApiError)
+    end
+  end
+
 end
