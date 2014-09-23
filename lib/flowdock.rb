@@ -5,11 +5,29 @@ require 'multi_json'
 module Flowdock
   FLOWDOCK_API_URL = "https://api.flowdock.com/v1"
 
+  class InvalidParameterError < StandardError; end
+  class ApiError < StandardError; end
+
+  module Helpers
+    def blank?(var)
+      var.nil? || var.respond_to?(:length) && var.length == 0
+    end
+
+    def handle_response(resp)
+      json = MultiJson.decode(resp.body || '{}')
+      unless resp.code >= 200 && resp.code < 300
+        errors = json["errors"].map {|k,v| "#{k}: #{v.join(',')}"}.join("\n") unless json["errors"].nil?
+        raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}\n Errors:\n#{errors}"
+      end
+      json
+    rescue MultiJson::DecodeError
+      raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\nBody: #{resp.body}"
+    end
+  end
+
   class Flow
     include HTTParty
-    class InvalidParameterError < StandardError; end
-    class ApiError < StandardError; end
-
+    include Helpers
     attr_reader :api_token, :source, :project, :from, :external_user_name
 
     # Required options keys: :api_token
@@ -77,12 +95,16 @@ module Flowdock
 
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || blank?(tag) }
+      thread_id = params[:thread_id]
+      message_id = params[:message_id] || params[:message]
 
       params = {
         :content => params[:content],
         :external_user_name => @external_user_name
       }
       params[:tags] = tags.join(",") if tags.size > 0
+      params[:thread_id] = thread_id if thread_id
+      params[:message_id] = message_id if message_id
 
       # Send the request
       resp = self.class.post(get_flowdock_api_url("messages/chat"), :body => params)
@@ -98,25 +120,62 @@ module Flowdock
 
     private
 
-    def blank?(var)
-      var.nil? || var.respond_to?(:length) && var.length == 0
-    end
-
-    def handle_response(resp)
-      unless resp.code == 200
-        begin
-          # should have JSON response
-          json = MultiJson.decode(resp.body)
-          errors = json["errors"].map {|k,v| "#{k}: #{v.join(',')}"}.join("\n") unless json["errors"].nil?
-          raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}\n Errors:\n#{errors}"
-        rescue MultiJson::DecodeError
-          raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\nBody: #{resp.body}"
-        end
-      end
-    end
-
     def get_flowdock_api_url(path)
       "#{FLOWDOCK_API_URL}/#{path}/#{@api_token}"
     end
+
   end
+
+  class Client
+    include HTTParty
+    include Helpers
+    attr_reader :api_token
+    def initialize(options = {})
+      @api_token = options[:api_token]
+      raise InvalidParameterError, "Client must have :api_token attribute" if blank?(@api_token)
+    end
+
+    def chat_message(params)
+      raise InvalidParameterError, "Message must have :content" if blank?(params[:content])
+      raise InvalidParameterError, "Message must have :flow" if blank?(params[:flow])
+      params = params.clone
+      tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
+      params[:message] = params.delete(:message_id) if params[:message_id]
+      tags.reject! { |tag| !tag.kind_of?(String) || blank?(tag) }
+      event = if params[:message] then 'comment' else 'message' end
+      post(event + 's', params.merge(tags: tags, event: event))
+    end
+
+    def post(path, data = {})
+      resp = self.class.post(api_url(path), :body => MultiJson.dump(data), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      handle_response(resp)
+    end
+
+    def get(path, data = {})
+      resp = self.class.get(api_url(path), :query => data, :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      handle_response(resp)
+    end
+
+    def put(path, data = {})
+      resp = self.class.put(api_url(path), :body => MultiJson.dump(data), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      handle_response(resp)
+    end
+
+    def delete(path)
+      resp = self.class.delete(api_url(path), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      handle_response(resp)
+    end
+
+    private
+
+    def api_url(path)
+      File.join(FLOWDOCK_API_URL, path)
+    end
+
+    def headers
+      {"Content-Type" => "application/json", "Accept" => "application/json"}
+    end
+  end
+
+
 end
