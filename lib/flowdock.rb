@@ -138,7 +138,9 @@ module Flowdock
     def chat_message(params)
       raise InvalidParameterError, "Message must have :content" if blank?(params[:content])
       raise InvalidParameterError, "Message must have :flow" if blank?(params[:flow])
+      params = params.clone
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
+      params[:message] = params.delete(:message_id) if params[:message_id]
       tags.reject! { |tag| !tag.kind_of?(String) || blank?(tag) }
       event = if params[:message] then 'comment' else 'message' end
       post(event + 's', params.merge(tags: tags, event: event))
