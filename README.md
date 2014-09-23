@@ -130,6 +130,7 @@ flow = Flowdock::Flow.new(:api_token => ["__FLOW_TOKEN__", "__ANOTHER_FLOW_TOKEN
 * `Flowdock::Client` methods
 
   `chat_message` - Send message to Chat.
+
   `post`, `get`, `put`, `delete` - Send arbitary api calls. First parameter is the path, second is data. See [REST API documentation](http://www.flowdock.com/api/rest).
 
 ## Deployment notifications
