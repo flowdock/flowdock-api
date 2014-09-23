@@ -21,9 +21,65 @@ If you're using JRuby, you'll also need to install jruby-openssl gem.
 
 ## Usage
 
-To post content to Chat or Team Inbox, you need to use the target flow's API token. They can be found from [tokens page](https://www.flowdock.com/account/tokens).
+To post content to Chat or Team Inbox using `Flowdock::Flow`, you need to use the target flow's API token.
 
-### Posting to Chat
+Alternatively you can use your personal api token and the `Flowdock::Client`.
+
+All tokens can be found in [tokens page](https://www.flowdock.com/account/tokens).
+
+### REST API
+
+To create an api client you need your personal api token:
+
+```ruby
+require 'rubygems'
+require 'flowdock'
+
+# Create a client that uses you api token to authenticate
+client = Flowdock::Client.new(api_token: '__MY_PERSONAL_API_TOKEN__')
+```
+
+#### Posting to Chat
+
+To send a chat message or comment, you can use the client.chat_message:
+
+```ruby
+flow_id = 'acdcabbacd0123456789'
+
+# Send a simple chat message
+client.chat_message(flow: flow_id, content: "I'm sending a message!", tags: ['foo', 'bar'])
+
+# Send a comment to message 1234
+client.chat_message(flow: flow_id, content: "Now I'm commenting!", message: 1234)
+```
+
+Both methods return the created message as a hash.
+
+#### Arbitary api access
+
+You can use the client to access api in other ways too. See [REST API documentation](http://www.flowdock.com/api/rest) for all the resources.
+
+```ruby
+
+# Fetch all my flows
+flows = client.get('/flows')
+
+# Update a flow's name
+client.put('/flows/acme/my_flow', name: 'Your flow')
+
+# Delete a message
+client.delete('/flows/acme/my_flow/messages/12345')
+
+# Create an invitation
+client.post('/flows/acme/my_flow/invitations', email: 'user@example.com', message: "I'm inviting you to our flow using api.")
+
+```
+
+### Push api
+
+To use the push api, you need a flow token:
+
+#### Posting to Chat
 
 ```ruby
 require 'rubygems'
@@ -36,7 +92,7 @@ flow = Flowdock::Flow.new(:api_token => "__FLOW_TOKEN__", :external_user_name =>
 flow.push_to_chat(:content => "Hello!", :tags => ["cool", "stuff"])
 ```
 
-### Posting to Team Inbox
+#### Posting to Team Inbox
 
 ```ruby
 # create a new Flow object with target flow's api token and sender information for Team Inbox posting
@@ -49,7 +105,7 @@ flow.push_to_team_inbox(:subject => "Greetings from Flowdock API Gem!",
   :tags => ["cool", "stuff"], :link => "http://www.flowdock.com/")
 ```
 
-### Posting to multiple flows
+#### Posting to multiple flows
 
 ```ruby
 require 'rubygems'
@@ -63,7 +119,7 @@ flow = Flowdock::Flow.new(:api_token => ["__FLOW_TOKEN__", "__ANOTHER_FLOW_TOKEN
 
 ## API methods
 
-* Flow methods
+* `Flowdock::Flow` methods
 
   `push_to_team_inbox` - Send message to Team Inbox. See [API documentation](http://www.flowdock.com/api/team-inbox) for details.
 
@@ -71,6 +127,10 @@ flow = Flowdock::Flow.new(:api_token => ["__FLOW_TOKEN__", "__ANOTHER_FLOW_TOKEN
 
   `send_message(params)` - Deprecated. Please use `push_to_team_inbox` instead.
 
+* `Flowdock::Client` methods
+
+  `chat_message` - Send message to Chat.
+  `post`, `get`, `put`, `delete` - Send arbitary api calls. First parameter is the path, second is data. See [REST API documentation](http://www.flowdock.com/api/rest).
 
 ## Deployment notifications
 
