@@ -336,6 +336,7 @@ end
 describe Flowdock::Client do
 
   let(:token) { SecureRandom.hex(8) }
+  let(:client) { Flowdock::Client.new(api_token: token) }
 
   describe 'initializing' do
 
@@ -354,24 +355,24 @@ describe Flowdock::Client do
 
   describe 'posting to chat' do
 
-    let(:client) { Flowdock::Client.new(api_token: token) }
     let(:flow) { SecureRandom.hex(8) }
 
     it 'posts to /messages' do
       expect {
         stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
-          with(:body => "flow=#{flow}&content=foobar&event=message").
-          to_return(:status => 200, :body => "", :headers => {})
+          with(:body => MultiJson.dump(flow: flow, content: "foobar", tags: [], event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
+          to_return(:status => 201, :body => '{"id":123}', :headers => {"Content-Type" => "application/json"})
         res = client.chat_message(flow: flow, content: 'foobar')
-        expect(res).to be(true)
+        expect(res).to eq({"id" => 123})
       }.not_to raise_error
     end
     it 'posts to /comments' do
       expect {
         stub_request(:post, "https://#{token}:@api.flowdock.com/v1/comments").
-          with(:body => "flow=#{flow}&content=foobar&message=12345&event=comment").
-          to_return(:status => 200, :body => "", :headers => {})
-        client.chat_message(flow: flow, content: 'foobar', message: 12345)
+          with(:body => MultiJson.dump(flow: flow, content: "foobar", message: 12345, tags: [], event: "comment"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
+          to_return(:status => 201, :body => '{"id":1234}', :headers => {"Content-Type" => "application/json"})
+        res = client.chat_message(flow: flow, content: 'foobar', message: 12345)
+        expect(res).to eq({"id" => 1234})
       }.not_to raise_error
     end
     it 'raises without flow' do
@@ -391,6 +392,43 @@ describe Flowdock::Client do
             :status => 400)
           client.chat_message(flow: flow, content: 'foobar')
       }.to raise_error(Flowdock::ApiError)
+    end
+  end
+
+  describe 'GET' do
+    it 'does abstract get with params' do
+      stub_request(:get, "https://#{token}:@api.flowdock.com/v1/some_path?sort_by=date").
+         with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}).
+         to_return(:status => 200, :body => '{"id": 123}', :headers => {"Content-Type" => "application/json"})
+      expect(client.get('/some_path', {sort_by: 'date'})).to eq({"id" => 123})
+    end
+  end
+
+  describe 'POST' do
+    it 'does abstract post with body' do
+      stub_request(:post, "https://#{token}:@api.flowdock.com/v1/other_path").
+         with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}, :body => MultiJson.dump(name: 'foobar')).
+         to_return(:status => 200, :body => '{"id": 123,"name": "foobar"}', :headers => {"Content-Type" => "application/json"})
+      expect(client.post('other_path', {name: 'foobar'})).to eq({"id" => 123, "name" => "foobar"})
+    end
+
+  end
+
+  describe 'PUT' do
+    it 'does abstract put with body' do
+      stub_request(:put, "https://#{token}:@api.flowdock.com/v1/other_path").
+         with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}, :body => MultiJson.dump(name: 'foobar')).
+         to_return(:status => 200, :body => '{"id": 123,"name": "foobar"}', :headers => {"Content-Type" => "application/json"})
+      expect(client.put('other_path', {name: 'foobar'})).to eq({"id" => 123, "name" => "foobar"})
+    end
+  end
+
+  describe 'DELETE' do
+    it 'does abstract delete with params' do
+      stub_request(:delete, "https://#{token}:@api.flowdock.com/v1/some_path").
+         with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}).
+         to_return(:status => 200, :body => '', :headers => {"Content-Type" => "application/json"})
+      expect(client.delete('/some_path')).to eq({})
     end
   end
 

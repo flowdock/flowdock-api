@@ -14,16 +14,14 @@ module Flowdock
     end
 
     def handle_response(resp)
+      json = MultiJson.decode(resp.body || '{}')
       unless resp.code >= 200 && resp.code < 300
-        begin
-          # should have JSON response
-          json = MultiJson.decode(resp.body)
-          errors = json["errors"].map {|k,v| "#{k}: #{v.join(',')}"}.join("\n") unless json["errors"].nil?
-          raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}\n Errors:\n#{errors}"
-        rescue MultiJson::DecodeError
-          raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\nBody: #{resp.body}"
-        end
+        errors = json["errors"].map {|k,v| "#{k}: #{v.join(',')}"}.join("\n") unless json["errors"].nil?
+        raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}\n Errors:\n#{errors}"
       end
+      json
+    rescue MultiJson::DecodeError
+      raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\nBody: #{resp.body}"
     end
   end
 
@@ -98,7 +96,7 @@ module Flowdock
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || blank?(tag) }
       thread_id = params[:thread_id]
-      message_id = params[:message_id]
+      message_id = params[:message_id] || params[:message]
 
       params = {
         :content => params[:content],
@@ -143,19 +141,37 @@ module Flowdock
       tags = (params[:tags].kind_of?(Array)) ? params[:tags] : []
       tags.reject! { |tag| !tag.kind_of?(String) || blank?(tag) }
       event = if params[:message] then 'comment' else 'message' end
-      deliver(api_url(event + 's'), params.merge(tags: tags, event: event))
+      post(event + 's', params.merge(tags: tags, event: event))
+    end
+
+    def post(path, data = {})
+      resp = self.class.post(api_url(path), :body => MultiJson.dump(data), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      handle_response(resp)
+    end
+
+    def get(path, data = {})
+      resp = self.class.get(api_url(path), :query => data, :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      handle_response(resp)
+    end
+
+    def put(path, data = {})
+      resp = self.class.put(api_url(path), :body => MultiJson.dump(data), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      handle_response(resp)
+    end
+
+    def delete(path)
+      resp = self.class.delete(api_url(path), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      handle_response(resp)
     end
 
     private
 
-    def deliver(url, message)
-      resp = self.class.post(url, :body => message, :basic_auth => {:username => @api_token, :password => ''})
-      handle_response(resp)
-      true
+    def api_url(path)
+      File.join(FLOWDOCK_API_URL, path)
     end
 
-    def api_url(path)
-      "#{FLOWDOCK_API_URL}/#{path}"
+    def headers
+      {"Content-Type" => "application/json", "Accept" => "application/json"}
     end
   end
 
