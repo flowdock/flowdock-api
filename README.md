@@ -140,6 +140,10 @@ There are separate gems for deployment notifications:
 * [capistrano-flowdock](https://github.com/flowdock/capistrano-flowdock)
 * [mina-flowdock](https://github.com/elskwid/mina-flowdock)
 
+## Changelog
+
+* 0.5.0 - Added `Flowdock::Client` that authenticates using user credentials and can be used to interact with the api. Better threads support for both `Flow` and `Client` so that comments can be made.
+
 ## Copyright
 
 Copyright (c) 2012 Flowdock Ltd. See LICENSE for further details.
