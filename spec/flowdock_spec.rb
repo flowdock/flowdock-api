@@ -375,6 +375,16 @@ describe Flowdock::Client do
         expect(res).to eq({"id" => 1234})
       }.not_to raise_error
     end
+    it 'posts to /private/:user_id/messages' do
+      expect {
+        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/private/12345/messages").
+          with(:body => MultiJson.dump(content: "foobar", event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
+          to_return(:status => 201, :body => '{"id":1234}', :headers => {"Content-Type" => "application/json"})
+        res = client.private_message(user_id: "12345", content: 'foobar')
+        expect(res).to eq({"id" => 1234})
+      }.not_to raise_error
+    end
+
     it 'raises without flow' do
       expect {
         client.chat_message(content: 'foobar')

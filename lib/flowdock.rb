@@ -146,6 +146,18 @@ module Flowdock
       post(event + 's', params.merge(tags: tags, event: event))
     end
 
+    def private_message(params)
+      raise InvalidParameterError, "Message must have :content" if blank?(params[:content])
+      raise InvalidParameterError, "Message must have :user_id" if blank?(params[:user_id])
+
+      user_id = params.delete(:user_id)
+      
+      params = params.clone
+      event = "message"
+
+      post("private/#{user_id}/messages", params.merge(event: event))
+    end
+    
     def post(path, data = {})
       resp = self.class.post(api_url(path), :body => MultiJson.dump(data), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
       handle_response(resp)
