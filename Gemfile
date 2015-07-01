@@ -8,7 +8,6 @@ gem "multi_json"
 # Include everything needed to run rake, tests, features, etc.
 group :development do
   gem "rdoc", ">= 2.4.2"
-  gem "byebug"
   gem "rspec", "~> 2.6"
   gem "webmock"
   gem "bundler", "~> 1.0"
