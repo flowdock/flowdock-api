@@ -29,14 +29,22 @@ All tokens can be found in [tokens page](https://www.flowdock.com/account/tokens
 
 ### REST API
 
-To create an api client you need your personal api token:
+To create an api client you need your personal [api token](https://flowdock.com/account/tokens), an [OAuth token](https://www.flowdock.com/api/authentication) or a [flow_token tied to a source](https://www.flowdock.com/api/sources).
+
+Note that a source `flow_token` will only allow you to post [thread messages](https://www.flowdock.com/api/production-integrations#/post-inbox) to the flow the source belongs to.
 
 ```ruby
 require 'rubygems'
 require 'flowdock'
 
+
+
 # Create a client that uses you api token to authenticate
-client = Flowdock::Client.new(api_token: '__MY_PERSONAL_API_TOKEN__')
+api_token_client = Flowdock::Client.new(api_token: '__MY_PERSONAL_API_TOKEN__')
+
+# Create a client that uses you api token to authenticate
+
+flow_token_client = Flowdock::Client.new(flow_token: '__FLOW_TOKEN__')
 ```
 
 #### Posting to Chat
@@ -54,6 +62,33 @@ client.chat_message(flow: flow_id, content: "Now I'm commenting!", message: 1234
 ```
 
 Both methods return the created message as a hash.
+
+#### Post a threaded messages
+
+You can post `activity` and `discussion` events to a [threaded conversation](https://www.flowdock.com/api/integration-getting-started) in Flowdock.
+
+```
+client.post_to_thread(
+    event: "activity",
+    author: {
+        name: "anttipitkanen",
+        avatar: "https://avatars.githubusercontent.com/u/946511?v=2",
+    },
+    title: "activity title",
+    external_thread_id: "your-id-here",
+    thread: {
+        title: "this is required if you provide a thread field at all",
+        body: "<p>some html content</p>",
+        external_url: "https://example.com/issue/123",
+        status: {
+            color: "green",
+            value: "open"
+            }
+        }
+    }
+}
+```
+
 
 #### Arbitary api access
 
