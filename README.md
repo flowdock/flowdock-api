@@ -6,7 +6,7 @@ Ruby gem for using the Flowdock Push API. See the [Push API documentation](http:
 
 [![Build Status](https://secure.travis-ci.org/flowdock/flowdock-api.png)](http://travis-ci.org/flowdock/flowdock-api)
 
-The Flowdock gem is tested on Ruby 1.9.3 and JRuby.
+The Flowdock gem is tested on Ruby 2.1 and JRuby.
 
 ## Dependencies
 
@@ -25,7 +25,7 @@ To post content to a flow's chat or team inbox using `Flowdock::Flow`, you need 
 
 Alternatively, you can use your personal API token and the `Flowdock::Client`.
 
-All tokens can be found on the [tokens page](https://www.flowdock.com/account/tokens).
+Personal and flow's tokens can be found on the [tokens page](https://www.flowdock.com/account/tokens).
 
 ### REST API
 
@@ -80,7 +80,6 @@ flow_token_client.post_to_thread(
         status: {
             color: "green",
             value: "open"
-            }
         }
     }
 }
