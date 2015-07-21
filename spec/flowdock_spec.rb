@@ -73,9 +73,10 @@ describe Flowdock do
     end
 
     it "should send without reply_to address" do
-      lambda {
+      expect {
+        stub_request(:post, push_to_team_inbox_url(@token)).to_return(:body => "", :status => 200)
         @flow.push_to_team_inbox(@valid_attributes.merge(:reply_to => ""))
-      }.should_not raise_error(Flowdock::InvalidParameterError)
+      }.not_to raise_error
     end
 
     it "should succeed with correct token, source and sender information" do
@@ -180,7 +181,7 @@ describe Flowdock do
           to_return(:body => "", :status => 200)
 
         @flow.push_to_team_inbox(:subject => "Hello World", :content => @example_content,
-          :tags => ["cool", "stuff"], :link => "http://www.flowdock.com/").should be_true
+          :tags => ["cool", "stuff"], :link => "http://www.flowdock.com/").should be_truthy
       }.should_not raise_error
     end
 
@@ -201,7 +202,7 @@ describe Flowdock do
           to_return(:body => "", :status => 200)
 
         @flow.push_to_team_inbox(:subject => "Hello World", :content => @example_content, :tags => ["cool", "stuff"],
-          :from => {:name => "Test", :address => "invalid@nodeta.fi"}, :reply_to => "foobar@example.com").should be_true
+          :from => {:name => "Test", :address => "invalid@nodeta.fi"}, :reply_to => "foobar@example.com").should be_truthy
       }.should_not raise_error
     end
 
@@ -256,7 +257,7 @@ describe Flowdock do
           with(:body => @valid_parameters.merge(:tags => "cool,stuff")).
           to_return(:body => "", :status => 200)
 
-        @flow.push_to_chat(@valid_parameters).should be_true
+        @flow.push_to_chat(@valid_parameters).should be_truthy
       }.should_not raise_error
     end
 
