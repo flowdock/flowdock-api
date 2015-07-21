@@ -132,10 +132,12 @@ module Flowdock
     attr_reader :api_token
     def initialize(options = {})
       @api_token = options[:api_token]
-      raise InvalidParameterError, "Client must have :api_token attribute" if blank?(@api_token)
+      @flow_token = options[:flow_token]
+      raise InvalidParameterError, "Client must have :api_token or an :flow_token" if blank?(@api_token) && blank?(@flow_token)
     end
 
     def chat_message(params)
+      raise InvalidParameterError, "missing api_token" if blank?(@api_token)
       raise InvalidParameterError, "Message must have :content" if blank?(params[:content])
       raise InvalidParameterError, "Message must have :flow" if blank?(params[:flow])
       params = params.clone
@@ -147,17 +149,26 @@ module Flowdock
     end
 
     def private_message(params)
+      raise InvalidParameterError, "missing api_token" if blank?(@api_token)
       raise InvalidParameterError, "Message must have :content" if blank?(params[:content])
       raise InvalidParameterError, "Message must have :user_id" if blank?(params[:user_id])
 
       user_id = params.delete(:user_id)
-      
+
       params = params.clone
       event = "message"
 
       post("private/#{user_id}/messages", params.merge(event: event))
     end
-    
+
+    def post_to_thread(thread)
+      raise InvalidParameterError, "missing flow_token" if blank?(@flow_token)
+      resp = self.class.post(api_url("/messages"),
+                             body: MultiJson.dump(thread.merge(flow_token: @flow_token)),
+                             headers: headers)
+      handle_response resp
+    end
+
     def post(path, data = {})
       resp = self.class.post(api_url(path), :body => MultiJson.dump(data), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
       handle_response(resp)

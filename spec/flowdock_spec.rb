@@ -73,9 +73,10 @@ describe Flowdock do
     end
 
     it "should send without reply_to address" do
-      lambda {
+      expect {
+        stub_request(:post, push_to_team_inbox_url(@token)).to_return(:body => "", :status => 200)
         @flow.push_to_team_inbox(@valid_attributes.merge(:reply_to => ""))
-      }.should_not raise_error(Flowdock::InvalidParameterError)
+      }.not_to raise_error
     end
 
     it "should succeed with correct token, source and sender information" do
@@ -180,7 +181,7 @@ describe Flowdock do
           to_return(:body => "", :status => 200)
 
         @flow.push_to_team_inbox(:subject => "Hello World", :content => @example_content,
-          :tags => ["cool", "stuff"], :link => "http://www.flowdock.com/").should be_true
+          :tags => ["cool", "stuff"], :link => "http://www.flowdock.com/").should be_truthy
       }.should_not raise_error
     end
 
@@ -201,7 +202,7 @@ describe Flowdock do
           to_return(:body => "", :status => 200)
 
         @flow.push_to_team_inbox(:subject => "Hello World", :content => @example_content, :tags => ["cool", "stuff"],
-          :from => {:name => "Test", :address => "invalid@nodeta.fi"}, :reply_to => "foobar@example.com").should be_true
+          :from => {:name => "Test", :address => "invalid@nodeta.fi"}, :reply_to => "foobar@example.com").should be_truthy
       }.should_not raise_error
     end
 
@@ -256,7 +257,7 @@ describe Flowdock do
           with(:body => @valid_parameters.merge(:tags => "cool,stuff")).
           to_return(:body => "", :status => 200)
 
-        @flow.push_to_chat(@valid_parameters).should be_true
+        @flow.push_to_chat(@valid_parameters).should be_truthy
       }.should_not raise_error
     end
 
@@ -335,111 +336,129 @@ end
 
 describe Flowdock::Client do
 
-  let(:token) { SecureRandom.hex(8) }
-  let(:client) { Flowdock::Client.new(api_token: token) }
+  context "with flow_token" do
+    let(:token) { SecureRandom.hex }
+    let(:client) { Flowdock::Client.new(flow_token: token) }
+    let(:flow) { SecureRandom.hex }
 
-  describe 'initializing' do
-
-    it 'should initialize with access token' do
-      expect {
-        client = Flowdock::Client.new(api_token: token)
-        expect(client.api_token).to equal(token)
-      }.not_to raise_error
-    end
-    it 'should raise error if initialized without access token' do
-      expect {
-        client = Flowdock::Client.new(api_token: nil)
-      }.to raise_error(Flowdock::InvalidParameterError)
-    end
-  end
-
-  describe 'posting to chat' do
-
-    let(:flow) { SecureRandom.hex(8) }
-
-    it 'posts to /messages' do
-      expect {
-        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
-          with(:body => MultiJson.dump(flow: flow, content: "foobar", tags: [], event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
-          to_return(:status => 201, :body => '{"id":123}', :headers => {"Content-Type" => "application/json"})
-        res = client.chat_message(flow: flow, content: 'foobar')
+    describe "post a threaded message" do
+      it "succeeds" do
+        stub_request(:post, "https://api.flowdock.com/v1/messages").
+          with(body: MultiJson.dump(flow: flow, flow_token: token),
+               headers: {"Accept" => "application/json", "Content-Type" => "application/json"}).
+          to_return(status: 201, body: '{"id":123}', headers: {"Content-Type" => "application/json"})
+        res = client.post_to_thread({flow: flow})
         expect(res).to eq({"id" => 123})
-      }.not_to raise_error
+      end
     end
-    it 'posts to /comments' do
-      expect {
-        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/comments").
-          with(:body => MultiJson.dump(flow: flow, content: "foobar", message: 12345, tags: [], event: "comment"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
-          to_return(:status => 201, :body => '{"id":1234}', :headers => {"Content-Type" => "application/json"})
-        res = client.chat_message(flow: flow, content: 'foobar', message: 12345)
-        expect(res).to eq({"id" => 1234})
-      }.not_to raise_error
-    end
-    it 'posts to /private/:user_id/messages' do
-      expect {
-        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/private/12345/messages").
-          with(:body => MultiJson.dump(content: "foobar", event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
-          to_return(:status => 201, :body => '{"id":1234}', :headers => {"Content-Type" => "application/json"})
-        res = client.private_message(user_id: "12345", content: 'foobar')
-        expect(res).to eq({"id" => 1234})
-      }.not_to raise_error
+  end
+
+  context "with api_token" do
+    let(:token) { SecureRandom.hex(8) }
+    let(:client) { Flowdock::Client.new(api_token: token) }
+
+    describe 'initializing' do
+
+      it 'should initialize with access token' do
+        expect {
+          client = Flowdock::Client.new(api_token: token)
+          expect(client.api_token).to equal(token)
+        }.not_to raise_error
+      end
+      it 'should raise error if initialized without access token' do
+        expect {
+          client = Flowdock::Client.new(api_token: nil)
+        }.to raise_error(Flowdock::InvalidParameterError)
+      end
     end
 
-    it 'raises without flow' do
-      expect {
-        client.chat_message(content: 'foobar')
-      }.to raise_error(Flowdock::InvalidParameterError)
-    end
-    it 'raises without content' do
-      expect {
-        client.chat_message(flow: flow)
-      }.to raise_error(Flowdock::InvalidParameterError)
-    end
-    it 'handles error responses' do
-      expect {
-        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
-          to_return(:body => '{"message":"Validation error","errors":{"content":["can\'t be blank"],"external_user_name":["should not contain whitespace"]}}',
-            :status => 400)
+    describe 'posting to chat' do
+
+      let(:flow) { SecureRandom.hex(8) }
+
+      it 'posts to /messages' do
+        expect {
+          stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
+            with(:body => MultiJson.dump(flow: flow, content: "foobar", tags: [], event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
+            to_return(:status => 201, :body => '{"id":123}', :headers => {"Content-Type" => "application/json"})
+          res = client.chat_message(flow: flow, content: 'foobar')
+          expect(res).to eq({"id" => 123})
+        }.not_to raise_error
+      end
+      it 'posts to /comments' do
+        expect {
+          stub_request(:post, "https://#{token}:@api.flowdock.com/v1/comments").
+            with(:body => MultiJson.dump(flow: flow, content: "foobar", message: 12345, tags: [], event: "comment"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
+            to_return(:status => 201, :body => '{"id":1234}', :headers => {"Content-Type" => "application/json"})
+          res = client.chat_message(flow: flow, content: 'foobar', message: 12345)
+          expect(res).to eq({"id" => 1234})
+        }.not_to raise_error
+      end
+      it 'posts to /private/:user_id/messages' do
+        expect {
+          stub_request(:post, "https://#{token}:@api.flowdock.com/v1/private/12345/messages").
+            with(:body => MultiJson.dump(content: "foobar", event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
+            to_return(:status => 201, :body => '{"id":1234}', :headers => {"Content-Type" => "application/json"})
+          res = client.private_message(user_id: "12345", content: 'foobar')
+          expect(res).to eq({"id" => 1234})
+        }.not_to raise_error
+      end
+
+      it 'raises without flow' do
+        expect {
+          client.chat_message(content: 'foobar')
+        }.to raise_error(Flowdock::InvalidParameterError)
+      end
+      it 'raises without content' do
+        expect {
+          client.chat_message(flow: flow)
+        }.to raise_error(Flowdock::InvalidParameterError)
+      end
+      it 'handles error responses' do
+        expect {
+          stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
+            to_return(:body => '{"message":"Validation error","errors":{"content":["can\'t be blank"],"external_user_name":["should not contain whitespace"]}}',
+                      :status => 400)
           client.chat_message(flow: flow, content: 'foobar')
-      }.to raise_error(Flowdock::ApiError)
-    end
-  end
-
-  describe 'GET' do
-    it 'does abstract get with params' do
-      stub_request(:get, "https://#{token}:@api.flowdock.com/v1/some_path?sort_by=date").
-         with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}).
-         to_return(:status => 200, :body => '{"id": 123}', :headers => {"Content-Type" => "application/json"})
-      expect(client.get('/some_path', {sort_by: 'date'})).to eq({"id" => 123})
-    end
-  end
-
-  describe 'POST' do
-    it 'does abstract post with body' do
-      stub_request(:post, "https://#{token}:@api.flowdock.com/v1/other_path").
-         with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}, :body => MultiJson.dump(name: 'foobar')).
-         to_return(:status => 200, :body => '{"id": 123,"name": "foobar"}', :headers => {"Content-Type" => "application/json"})
-      expect(client.post('other_path', {name: 'foobar'})).to eq({"id" => 123, "name" => "foobar"})
+        }.to raise_error(Flowdock::ApiError)
+      end
     end
 
-  end
+    describe 'GET' do
+      it 'does abstract get with params' do
+        stub_request(:get, "https://#{token}:@api.flowdock.com/v1/some_path?sort_by=date").
+          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}).
+          to_return(:status => 200, :body => '{"id": 123}', :headers => {"Content-Type" => "application/json"})
+        expect(client.get('/some_path', {sort_by: 'date'})).to eq({"id" => 123})
+      end
+    end
 
-  describe 'PUT' do
-    it 'does abstract put with body' do
-      stub_request(:put, "https://#{token}:@api.flowdock.com/v1/other_path").
-         with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}, :body => MultiJson.dump(name: 'foobar')).
-         to_return(:status => 200, :body => '{"id": 123,"name": "foobar"}', :headers => {"Content-Type" => "application/json"})
-      expect(client.put('other_path', {name: 'foobar'})).to eq({"id" => 123, "name" => "foobar"})
+    describe 'POST' do
+      it 'does abstract post with body' do
+        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/other_path").
+          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}, :body => MultiJson.dump(name: 'foobar')).
+          to_return(:status => 200, :body => '{"id": 123,"name": "foobar"}', :headers => {"Content-Type" => "application/json"})
+        expect(client.post('other_path', {name: 'foobar'})).to eq({"id" => 123, "name" => "foobar"})
+      end
+
+    end
+
+    describe 'PUT' do
+      it 'does abstract put with body' do
+        stub_request(:put, "https://#{token}:@api.flowdock.com/v1/other_path").
+          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}, :body => MultiJson.dump(name: 'foobar')).
+          to_return(:status => 200, :body => '{"id": 123,"name": "foobar"}', :headers => {"Content-Type" => "application/json"})
+        expect(client.put('other_path', {name: 'foobar'})).to eq({"id" => 123, "name" => "foobar"})
+      end
+    end
+
+    describe 'DELETE' do
+      it 'does abstract delete with params' do
+        stub_request(:delete, "https://#{token}:@api.flowdock.com/v1/some_path").
+          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}).
+          to_return(:status => 200, :body => '', :headers => {"Content-Type" => "application/json"})
+        expect(client.delete('/some_path')).to eq({})
+      end
     end
   end
-
-  describe 'DELETE' do
-    it 'does abstract delete with params' do
-      stub_request(:delete, "https://#{token}:@api.flowdock.com/v1/some_path").
-         with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}).
-         to_return(:status => 200, :body => '', :headers => {"Content-Type" => "application/json"})
-      expect(client.delete('/some_path')).to eq({})
-    end
-  end
-
 end
