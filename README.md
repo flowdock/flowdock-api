@@ -176,7 +176,7 @@ There are separate gems for deployment notifications:
 * [mina-flowdock](https://github.com/elskwid/mina-flowdock)
 
 ## Changelog
-
+* 0.7.0 - Added `post_to_thread`
 * 0.5.0 - Added `Flowdock::Client` that authenticates using user credentials and can be used to interact with the API. Better threads support for both `Flow` and `Client` so that comments can be made.
 
 ## Copyright
