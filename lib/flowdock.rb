@@ -17,7 +17,6 @@ module Flowdock
     def handle_response(resp)
       json = MultiJson.decode(resp.body || '{}')
 
-      puts resp.code
       if resp.code == 404
         raise NotFoundError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}"
       end
