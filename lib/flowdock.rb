@@ -6,6 +6,7 @@ module Flowdock
   FLOWDOCK_API_URL = "https://api.flowdock.com/v1"
 
   class InvalidParameterError < StandardError; end
+  class NotFoundError < StandardError; end
   class ApiError < StandardError; end
 
   module Helpers
@@ -15,6 +16,11 @@ module Flowdock
 
     def handle_response(resp)
       json = MultiJson.decode(resp.body || '{}')
+
+      if resp.code == 404
+        raise NotFoundError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}"
+      end
+
       unless resp.code >= 200 && resp.code < 300
         errors = json["errors"].map {|k,v| "#{k}: #{v.join(',')}"}.join("\n") unless json["errors"].nil?
         raise ApiError, "Flowdock API returned error:\nStatus: #{resp.code}\n Message: #{json["message"]}\n Errors:\n#{errors}"

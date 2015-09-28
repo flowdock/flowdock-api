@@ -224,6 +224,25 @@ describe Flowdock do
         @flow.push_to_team_inbox(:subject => "Hello World", :content => @example_content).should be_false
       }.should raise_error(Flowdock::ApiError)
     end
+
+    it "should raise error if backend returns 404 NotFound" do
+      lambda {
+        stub_request(:post, push_to_team_inbox_url(@token)).
+          with(:body => {
+            :source => "myapp",
+            :project => "myproject",
+            :format => "html",
+            :from_name => "Eric Example",
+            :from_address => "eric@example.com",
+            :reply_to => "john@example.com",
+            :subject => "Hello World",
+            :content => @example_content
+          }).
+          to_return(:body => "{}", :status => 404)
+
+        @flow.push_to_team_inbox(:subject => "Hello World", :content => @example_content).should be_false
+      }.should raise_error(Flowdock::NotFoundError)
+    end
   end
 
   describe "with sending Chat messages" do
