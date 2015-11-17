@@ -21,6 +21,25 @@ describe Flowdock do
     end
   end
 
+  describe "handle_response" do
+    it "parses a response body that contains an empty string" do
+      class TestResponse
+        attr_reader :body, :code
+
+        def initialize
+          @body = ""
+          @code = 200
+        end
+      end
+
+      class TestHelper
+        include Flowdock::Helpers
+      end
+
+      expect(TestHelper.new.handle_response(TestResponse.new)).to eq({})
+    end
+  end
+
   describe "with sending Team Inbox messages" do
     before(:each) do
       @token = "test"
