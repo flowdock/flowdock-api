@@ -82,7 +82,7 @@ flow_token_client.post_to_thread(
             value: "open"
         }
     }
-}
+)
 ```
 
 
