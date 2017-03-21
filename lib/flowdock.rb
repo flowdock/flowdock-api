@@ -142,6 +142,10 @@ module Flowdock
       @api_token = options[:api_token]
       @flow_token = options[:flow_token]
       raise InvalidParameterError, "Client must have :api_token or an :flow_token" if blank?(@api_token) && blank?(@flow_token)
+      @proxy_host = options[:proxy_host] || nil
+      @proxy_port = options[:proxy_port] || nil
+      @proxy_username = options[:proxy_username] || nil
+      @proxy_password = options[:proxy_password] || nil
     end
 
     def chat_message(params)
@@ -173,27 +177,70 @@ module Flowdock
       raise InvalidParameterError, "missing flow_token" if blank?(@flow_token)
       resp = self.class.post(api_url("/messages"),
                              body: MultiJson.dump(thread.merge(flow_token: @flow_token)),
-                             headers: headers)
+                             headers: headers,
+                             http_proxyaddr: @proxy_host,
+                             http_proxyport: @proxy_port,
+                             http_proxyuser: @proxy_username,
+                             http_proxypass: @proxy_password)
       handle_response resp
     end
 
     def post(path, data = {})
-      resp = self.class.post(api_url(path), :body => MultiJson.dump(data), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      resp = self.class.post(api_url(path),
+                          :body => MultiJson.dump(data),
+                          :basic_auth => {
+                            :username => @api_token,
+                            :password => ''
+                          },
+                          :headers => headers,
+                          :http_proxyaddr => @proxy_host,
+                          :http_proxyport => @proxy_port,
+                          :http_proxyuser => @proxy_username,
+                          :http_proxypass => @proxy_password)
       handle_response(resp)
     end
 
     def get(path, data = {})
-      resp = self.class.get(api_url(path), :query => data, :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      resp = self.class.get(api_url(path),
+                          :query => data,
+                          :basic_auth => {
+                            :username => @api_token,
+                            :password => ''
+                          },
+                          :headers => headers,
+                          :http_proxyaddr => @proxy_host,
+                          :http_proxyport => @proxy_port,
+                          :http_proxyuser => @proxy_username,
+                          :http_proxypass => @proxy_password)
       handle_response(resp)
     end
 
     def put(path, data = {})
-      resp = self.class.put(api_url(path), :body => MultiJson.dump(data), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      resp = self.class.put(api_url(path),
+                          :body => MultiJson.dump(data),
+                          :basic_auth => {
+                            :username => @api_token,
+                            :password => ''
+                          },
+                          :headers => headers,
+                          :http_proxyaddr => @proxy_host,
+                          :http_proxyport => @proxy_port,
+                          :http_proxyuser => @proxy_username,
+                          :http_proxypass => @proxy_password)
       handle_response(resp)
     end
 
     def delete(path)
-      resp = self.class.delete(api_url(path), :basic_auth => {:username => @api_token, :password => ''}, :headers => headers)
+      resp = self.class.delete(api_url(path),
+                          :basic_auth => {
+                            :username => @api_token,
+                            :password => ''
+                          },
+                          :headers => headers,
+                          :http_proxyaddr => @proxy_host,
+                          :http_proxyport => @proxy_port,
+                          :http_proxyuser => @proxy_username,
+                          :http_proxypass => @proxy_password)
       handle_response(resp)
     end
 

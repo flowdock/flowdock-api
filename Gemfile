@@ -7,6 +7,7 @@ gem "multi_json"
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 group :development do
+  gem 'rake', '< 11.0'
   gem "rdoc", ">= 2.4.2"
   gem "rspec", "~> 2.6"
   gem "webmock"
