@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'spec_helper'
 
 describe Flowdock do
@@ -416,9 +417,13 @@ describe Flowdock::Client do
 
       it 'posts to /messages' do
         expect {
-          stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
-            with(:body => MultiJson.dump(flow: flow, content: "foobar", tags: [], event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
-            to_return(:status => 201, :body => '{"id":123}', :headers => {"Content-Type" => "application/json"})
+          # stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
+          #   with(:body => MultiJson.dump(flow: flow, content: "foobar", tags: [], event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
+          #   to_return(:status => 201, :body => '{"id":123}', :headers => {"Content-Type" => "application/json"})
+          stub_request(:post, "https://api.flowdock.com/v1/messages").
+                   with(:body => MultiJson.dump(flow: flow, content: "foobar", tags: [], event: "message"),
+                        :headers => {'Accept'=>'application/json', 'Authorization'=>'Basic ' + Base64.encode64(token + ":"), 'Content-Type'=>'application/json'}).
+                   to_return(:status => 201, :body => '{"id":123}' , :headers => {"Content-Type" => "application/json"})
           res = client.chat_message(flow: flow, content: 'foobar')
           expect(res).to eq({"id" => 123})
         }.not_to raise_error
