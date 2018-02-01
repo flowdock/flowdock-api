@@ -1,8 +1,10 @@
 source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 
-gem "httparty", "~> 0.7"
+gem "httparty", "~> 0.10.0"
 gem "multi_json"
+gem "rack", "~>1.6.8"
+gem "rake", "< 11.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
