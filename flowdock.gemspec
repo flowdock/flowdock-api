@@ -41,7 +41,7 @@ Gem::Specification.new do |s|
     s.specification_version = 4
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<httparty>, ["~> 0.7"])
+      s.add_runtime_dependency(%q<httparty>, ["~> 0.10.0"])
       s.add_runtime_dependency(%q<multi_json>, [">= 0"])
       s.add_development_dependency(%q<rdoc>, [">= 2.4.2"])
       s.add_development_dependency(%q<rspec>, ["~> 2.6"])
@@ -50,7 +50,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<jeweler>, [">= 2.0.1"])
       s.add_development_dependency(%q<jruby-openssl>, [">= 0"])
     else
-      s.add_dependency(%q<httparty>, ["~> 0.7"])
+      s.add_dependency(%q<httparty>, ["~> 0.10.0"])
       s.add_dependency(%q<multi_json>, [">= 0"])
       s.add_dependency(%q<rdoc>, [">= 2.4.2"])
       s.add_dependency(%q<rspec>, ["~> 2.6"])
@@ -60,7 +60,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<jruby-openssl>, [">= 0"])
     end
   else
-    s.add_dependency(%q<httparty>, ["~> 0.7"])
+    s.add_dependency(%q<httparty>, ["~> 0.10.0"])
     s.add_dependency(%q<multi_json>, [">= 0"])
     s.add_dependency(%q<rdoc>, [">= 2.4.2"])
     s.add_dependency(%q<rspec>, ["~> 2.6"])
