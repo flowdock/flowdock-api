@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'spec_helper'
 
 describe Flowdock do
@@ -416,8 +417,8 @@ describe Flowdock::Client do
 
       it 'posts to /messages' do
         expect {
-          stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
-            with(:body => MultiJson.dump(flow: flow, content: "foobar", tags: [], event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
+          stub_request(:post, "https://api.flowdock.com/v1/messages").
+            with(:body => MultiJson.dump(flow: flow, content: "foobar", tags: [], event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json", 'Authorization'=>'Basic ' + Base64.strict_encode64(token + ":") }).
             to_return(:status => 201, :body => '{"id":123}', :headers => {"Content-Type" => "application/json"})
           res = client.chat_message(flow: flow, content: 'foobar')
           expect(res).to eq({"id" => 123})
@@ -425,7 +426,7 @@ describe Flowdock::Client do
       end
       it 'posts to /comments' do
         expect {
-          stub_request(:post, "https://#{token}:@api.flowdock.com/v1/comments").
+          stub_request(:post, "https://api.flowdock.com/v1/comments").
             with(:body => MultiJson.dump(flow: flow, content: "foobar", message: 12345, tags: [], event: "comment"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
             to_return(:status => 201, :body => '{"id":1234}', :headers => {"Content-Type" => "application/json"})
           res = client.chat_message(flow: flow, content: 'foobar', message: 12345)
@@ -434,8 +435,8 @@ describe Flowdock::Client do
       end
       it 'posts to /private/:user_id/messages' do
         expect {
-          stub_request(:post, "https://#{token}:@api.flowdock.com/v1/private/12345/messages").
-            with(:body => MultiJson.dump(content: "foobar", event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json"}).
+          stub_request(:post, "https://api.flowdock.com/v1/private/12345/messages").
+            with(:body => MultiJson.dump(content: "foobar", event: "message"), :headers => {"Accept" => "application/json", "Content-Type" => "application/json", 'Authorization'=>'Basic ' + Base64.strict_encode64(token + ":") }).
             to_return(:status => 201, :body => '{"id":1234}', :headers => {"Content-Type" => "application/json"})
           res = client.private_message(user_id: "12345", content: 'foobar')
           expect(res).to eq({"id" => 1234})
@@ -454,7 +455,7 @@ describe Flowdock::Client do
       end
       it 'handles error responses' do
         expect {
-          stub_request(:post, "https://#{token}:@api.flowdock.com/v1/messages").
+          stub_request(:post, "https://api.flowdock.com/v1/messages").
             to_return(:body => '{"message":"Validation error","errors":{"content":["can\'t be blank"],"external_user_name":["should not contain whitespace"]}}',
                       :status => 400)
           client.chat_message(flow: flow, content: 'foobar')
@@ -464,8 +465,8 @@ describe Flowdock::Client do
 
     describe 'GET' do
       it 'does abstract get with params' do
-        stub_request(:get, "https://#{token}:@api.flowdock.com/v1/some_path?sort_by=date").
-          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}).
+        stub_request(:get, "https://api.flowdock.com/v1/some_path?sort_by=date").
+          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json', 'Authorization'=>'Basic ' + Base64.strict_encode64(token + ":") }).
           to_return(:status => 200, :body => '{"id": 123}', :headers => {"Content-Type" => "application/json"})
         expect(client.get('/some_path', {sort_by: 'date'})).to eq({"id" => 123})
       end
@@ -473,8 +474,8 @@ describe Flowdock::Client do
 
     describe 'POST' do
       it 'does abstract post with body' do
-        stub_request(:post, "https://#{token}:@api.flowdock.com/v1/other_path").
-          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}, :body => MultiJson.dump(name: 'foobar')).
+        stub_request(:post, "https://api.flowdock.com/v1/other_path").
+          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json', 'Authorization'=>'Basic ' + Base64.strict_encode64(token + ":") }, :body => MultiJson.dump(name: 'foobar')).
           to_return(:status => 200, :body => '{"id": 123,"name": "foobar"}', :headers => {"Content-Type" => "application/json"})
         expect(client.post('other_path', {name: 'foobar'})).to eq({"id" => 123, "name" => "foobar"})
       end
@@ -483,8 +484,8 @@ describe Flowdock::Client do
 
     describe 'PUT' do
       it 'does abstract put with body' do
-        stub_request(:put, "https://#{token}:@api.flowdock.com/v1/other_path").
-          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}, :body => MultiJson.dump(name: 'foobar')).
+        stub_request(:put, "https://api.flowdock.com/v1/other_path").
+          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json', 'Authorization'=>'Basic ' + Base64.strict_encode64(token + ":") }, :body => MultiJson.dump(name: 'foobar')).
           to_return(:status => 200, :body => '{"id": 123,"name": "foobar"}', :headers => {"Content-Type" => "application/json"})
         expect(client.put('other_path', {name: 'foobar'})).to eq({"id" => 123, "name" => "foobar"})
       end
@@ -492,8 +493,8 @@ describe Flowdock::Client do
 
     describe 'DELETE' do
       it 'does abstract delete with params' do
-        stub_request(:delete, "https://#{token}:@api.flowdock.com/v1/some_path").
-          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json'}).
+        stub_request(:delete, "https://api.flowdock.com/v1/some_path").
+          with(:headers => {'Accept'=>'application/json', 'Content-Type'=>'application/json', 'Authorization'=>'Basic ' + Base64.strict_encode64(token + ":") }).
           to_return(:status => 200, :body => '', :headers => {"Content-Type" => "application/json"})
         expect(client.delete('/some_path')).to eq({})
       end
